@@ -13,7 +13,7 @@ Example script
 # Import modules ---------- 
 from __future__ import division,print_function
 import numpy as np
-import smint.fit_fhhe as fit_fhhe
+from smint import fit_fhhe
 import astropy.io as aio
 
 #%% Inputs for fit
@@ -23,7 +23,7 @@ print('\nReading in the inputs...')
 params = dict()
 
 # path to folder containing Lopez & Fortney models
-params["path_folder_models"] = 'models/'
+params["path_folder_models"] = '../smint_models/'
 
 # planet params (Mass and Radius in Earth masses)
 params["Mp_earth"] = 25.7
@@ -106,8 +106,8 @@ if params["run_fit"]==True and params["postprocess_oldfit"]==False:
 #%% If loading from an old fit
 if params["postprocess_oldfit"]:
     print('\nLoading chains from previous fit...')
-    samples_met1 = np.load(params["outputdir"]+params["fname"]+'chains_met1.npy')
-    samples_met50 = np.load(params["outputdir"]+params["fname"]+'chains_met50.npy')
+    samples_met1 = np.load(params["outputdir"]+params["fname"]+'_chains_met1.npy')
+    samples_met50 = np.load(params["outputdir"]+params["fname"]+'_chains_met50.npy')
     samples_met1 = samples_met1[:, int(params["frac_burnin"]*samples_met1.shape[1]):, :].reshape((-1, params["ndim"]))
     samples_met50 = samples_met50[:, int(params["frac_burnin"]*samples_met50.shape[1]):, :].reshape((-1, params["ndim"]))
 
@@ -116,8 +116,11 @@ if params["postprocess_oldfit"]:
 if params["corner_indiv"]:
     print('\nPlotting individual corner plots...')
     fig_met1 = fit_fhhe.plot_corner(samples_met1, params, which="met1")
-    fig_met50 = fit_fhhe.plot_corner(samples_met50, params, which="met50") ### TO FIX
+    fig_met50 = fit_fhhe.plot_corner(samples_met50, params, which="met50")
+    fig_met1.savefig(params['outputdir']+params["fname"]+'_corner_met1.png')
+    fig_met50.savefig(params['outputdir']+params["fname"]+'_corner_met1.png')
 
 if params["corner_both"]:
     print('\nPlotting corner plot with both metallicities...')
     fig_both = fit_fhhe.plot_corner([samples_met1,samples_met50], params, which="both")
+    fig_both.savefig(params['outputdir']+params["fname"]+'_corner_both.png')
