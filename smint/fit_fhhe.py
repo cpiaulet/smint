@@ -159,7 +159,7 @@ def ini_fit(params):
         fenv_unc = 1.
         fenv_label = r"$\log_{10}$ f$_{HHe}$ [%]"
     else:
-        fenv_ini = 75.
+        fenv_ini = 10.
         fenv_unc = 10.
         fenv_label = r"f$_{HHe}$ [%]"
     x0 = np.array([fenv_ini, params["Mp_earth"], params["age_Gyr"], params["Sinc_earth"]])
@@ -195,7 +195,7 @@ def run_fit(params, interpolator, met=1.):
     
     if params["save"]:
         print("\nSaving the results...")
-        np.save(params["outputdir"]+params["fname"]+'chains_met'+str(int(met))+'.npy', sampler.chain)
+        np.save(params["outputdir"]+params["fname"]+'_chains_met'+str(int(met))+'.npy', sampler.chain)
     
     return sampler
 
