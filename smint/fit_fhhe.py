@@ -67,7 +67,7 @@ def lnlike(theta, true_rad, true_rad_err, interp, met, log_fenv_prior):
                                     finc=finc, mass=mass, fenv=fenv)
     return -0.5*(((true_rad-radius)/true_rad_err)**2)
 
-def lnprior(theta, mu, icovmat, flat_age, age_min, age_max, log_fenv_prior):
+def lnprior(theta, mu, icovmat, flat_age, age_min, age_max, log_fenv_prior, extrap):
     """
     prior (using known age distri, Finc distri, mass distri and flat in fenv
     or log fenv)
@@ -78,9 +78,16 @@ def lnprior(theta, mu, icovmat, flat_age, age_min, age_max, log_fenv_prior):
     else:
         fenv, mass, age, finc = theta
 
-    if (fenv < 0.01) or (fenv > 100.):
+    if extrap:
+        fenv_max = 100.
+        mass_max = 40.
+    else:
+        fenv_max = 20.
+        mass_max = 20.
+        
+    if (fenv < 0.01) or (fenv > fenv_max):
         return -np.inf
-    if (mass < 1.0) + (mass > 40.):
+    if (mass < 1.0) + (mass > mass_max):
         return -np.inf
     if (age < 0.1) + (age > 10.):
         return -np.inf
@@ -98,11 +105,11 @@ def lnprior(theta, mu, icovmat, flat_age, age_min, age_max, log_fenv_prior):
         return -np.dot(diff, np.dot(icovmat, diff)) / 2.0
 
 def lnprob(theta, true_rad, true_rad_err, interp, met, mu, icovmat, 
-           flat_age=True, age_min=0.1, age_max=10., log_fenv_prior=True):
+           flat_age=True, age_min=0.1, age_max=10., log_fenv_prior=True, extrap=False):
     """
     Log-probability function
     """
-    lp = lnprior(theta, mu, icovmat, flat_age, age_min, age_max, log_fenv_prior)
+    lp = lnprior(theta, mu, icovmat, flat_age, age_min, age_max, log_fenv_prior, extrap)
     if not np.isfinite(lp):
         return -np.inf
     else:
@@ -181,7 +188,7 @@ def run_fit(params, interpolator, met=1.):
                                           interpolator, met, params["mu"],
                                           params["icovmat"], params["flat_age"],
                                           params["age_min"], params["age_max"], 
-                                          params["log_fenv_prior"]))
+                                          params["log_fenv_prior"], params['extrap']))
     
     print("\nRunning the emcee fit...")
     sampler.run_mcmc(params["pos0"], params["nsteps"])
