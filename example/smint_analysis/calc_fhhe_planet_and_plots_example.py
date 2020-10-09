@@ -49,6 +49,11 @@ params["err_age_Gyr"] = 3. # std of gaussian prior
 params["flat_age"] = True # if True, use flat prior on star's age
 params["log_fenv_prior"] = False # if True, prior on fenv uniform on log10
 
+# option for extrapolation
+# if True, uses extrapolated table (fenv up to 100%, mass up to 40 Mearth)
+# if False, uses original Lopez & Fortney table (fenv up to 20%, mass up to 20 Mearth)
+params["extrap"] = True 
+
 params["nsteps"] = 1000 # number of MCMC steps [1000 for testing, use much more]
 params["ndim"] = 4 # number of fitted params
 params["nwalkers"] = 100 # number of MCMC walkers
@@ -60,7 +65,7 @@ params["frac_burnin"] = 0.6 # fraction of the chains to be discarded as burn-in
 # saving paths (OR path to chains if postprocess_oldfit==True)
 params["save"] = True # if True, save chains to npy files
 params["outputdir"] = '../smint_results/'
-params["fname"] = 'chains_test'
+params["fname"] = 'test' # identifier for this fit (used for saving)
 
 # plotting and printing options
 
@@ -122,5 +127,6 @@ if params["corner_indiv"]:
 
 if params["corner_both"]:
     print('\nPlotting corner plot with both metallicities...')
-    fig_both = fit_fhhe.plot_corner([samples_met1,samples_met50], params, which="both")
+    rg = [[0.,100.], [0., 40.], [0., 10.], [0., 1000.]] # None
+    fig_both = fit_fhhe.plot_corner([samples_met1,samples_met50], params, which="both", rg=rg)
     fig_both.savefig(params['outputdir']+params["fname"]+'_corner_both.png')
