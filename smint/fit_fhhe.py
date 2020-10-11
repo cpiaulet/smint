@@ -31,10 +31,11 @@ def find_radius_LF14_table(t=None, interp=None, met=1., age=1., finc=1.,
     f_env_pc = interp((met,age,finc,mass,fenv), method='linear')
     return f_env_pc
 
-def make_interpolator_LF14(t, R_array):
+def make_interpolator_LF14(t, R_array, log_fenv_prior=False):
     """
     make an interpolator for the planet radius as a function of 
     ['metallicity_solar','age_Gyr', 'F_inc_oplus','Mass_oplus','f_env_pc']
+    log_fenv_prior: if True, interpolate linearly in log space
     """
     
     # make array of f_env_pc values
@@ -42,7 +43,10 @@ def make_interpolator_LF14(t, R_array):
     age_Gyr = np.unique(np.array(t['age_Gyr']))
     F_inc_oplus = np.unique(np.array(t['F_inc_oplus']))
     Mass_oplus = np.unique(np.array(t['Mass_oplus']))
-    f_env_pc = np.unique(np.array(t['f_env_pc']))
+    if log_fenv_prior:
+        f_env_pc = np.unique(np.log10(np.array(t['f_env_pc'])))
+    else:     
+        f_env_pc = np.unique(np.array(t['f_env_pc']))
     
                     
     interpolator = RegularGridInterpolator((metallicity_solar, age_Gyr,
@@ -53,15 +57,13 @@ def make_interpolator_LF14(t, R_array):
 
 #%% emcee functions
 
-def lnlike(theta, true_rad, true_rad_err, interp, met, log_fenv_prior):
+def lnlike(theta, true_rad, true_rad_err, interp, met):
     """
     Log-likelihood function for emcee fit
     """
-    if log_fenv_prior:
-        log10_fenv, mass, age, finc = theta
-        fenv = 10**log10_fenv
-    else:
-        fenv, mass, age, finc = theta
+    # no distinction for log10: interpolator built accordingly (takes log10 as input if log_prior_fenv)
+    fenv, mass, age, finc = theta 
+    
     # estimate interpolated radius for these params
     radius = find_radius_LF14_table(t=None, interp=interp, met=met, age=age, 
                                     finc=finc, mass=mass, fenv=fenv)
@@ -113,7 +115,7 @@ def lnprob(theta, true_rad, true_rad_err, interp, met, mu, icovmat,
     if not np.isfinite(lp):
         return -np.inf
     else:
-        return lp + lnlike(theta, true_rad, true_rad_err, interp, met, log_fenv_prior)
+        return lp + lnlike(theta, true_rad, true_rad_err, interp, met)
     
 
 #%% setup and run interpolator
