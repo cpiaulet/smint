@@ -92,7 +92,7 @@ if params["run_fit"]==True and params["postprocess_oldfit"]==False:
     path_file = params["path_folder_models"] + 'master_table_LF14_add_fenv_100_M_40.csv'
     t = aio.ascii.read(path_file)
     R_array = np.load(params["path_folder_models"] + 'LF14_add_fenv_100_M_40.npy')
-    interpolator = fit_fhhe.make_interpolator_LF14(t, R_array)
+    interpolator = fit_fhhe.make_interpolator_LF14(t, R_array, log_fenv_prior=params["log_fenv_prior"])
 
     print('\nRunning the fit...')  
     
