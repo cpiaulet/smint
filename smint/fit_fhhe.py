@@ -19,8 +19,8 @@ import corner
 
 #%% utilities for interpolation
 
-def find_radius_LF14_table(t=None, interp=None, met=1., age=1., finc=1.,
-                           mass=10., fenv=10.):
+def find_radius_LF14_table(t=None, interp=None, met=1., age=1., log10_finc=0.,
+                           log10_mass=1., fenv=10.):
     """
     Given a metallicity, an age, an incident flux and a planet mass and envelope
     mass fraction (%),
@@ -28,21 +28,22 @@ def find_radius_LF14_table(t=None, interp=None, met=1., age=1., finc=1.,
     """
     if interp is None:
         interp = make_interpolator_LF14(t)
-    f_env_pc = interp((met,age,finc,mass,fenv), method='linear')
+    f_env_pc = interp((met,age,log10_finc,log10_mass,fenv), method='linear')
     return f_env_pc
 
 def make_interpolator_LF14(t, R_array, log_fenv_prior=False):
     """
     make an interpolator for the planet radius as a function of 
     ['metallicity_solar','age_Gyr', 'F_inc_oplus','Mass_oplus','f_env_pc']
+    the interpolation is linear with the log10 of the flux and planet mass
     log_fenv_prior: if True, interpolate linearly in log space
     """
     
     # make array of f_env_pc values
     metallicity_solar = np.unique(np.array(t['metallicity_solar']))
     age_Gyr = np.unique(np.array(t['age_Gyr']))
-    F_inc_oplus = np.unique(np.array(t['F_inc_oplus']))
-    Mass_oplus = np.unique(np.array(t['Mass_oplus']))
+    log10_F_inc_oplus = np.unique(np.log10(np.array(t['F_inc_oplus'])))
+    log10_Mass_oplus = np.unique(np.log10(np.array(t['Mass_oplus'])))
     if log_fenv_prior:
         f_env_pc = np.unique(np.log10(np.array(t['f_env_pc'])))
     else:     
@@ -50,7 +51,7 @@ def make_interpolator_LF14(t, R_array, log_fenv_prior=False):
     
                     
     interpolator = RegularGridInterpolator((metallicity_solar, age_Gyr,
-                                            F_inc_oplus,Mass_oplus,
+                                            log10_F_inc_oplus, log10_Mass_oplus,
                                             f_env_pc,), 
                                             R_array, bounds_error=False)
     return interpolator
@@ -66,7 +67,8 @@ def lnlike(theta, true_rad, true_rad_err, interp, met):
     
     # estimate interpolated radius for these params
     radius = find_radius_LF14_table(t=None, interp=interp, met=met, age=age, 
-                                    finc=finc, mass=mass, fenv=fenv)
+                                    log10_finc=np.log10(finc), log10_mass=np.log10(mass),
+                                    fenv=fenv)
     return -0.5*(((true_rad-radius)/true_rad_err)**2)
 
 def lnprior(theta, mu, icovmat, flat_age, age_min, age_max, log_fenv_prior, extrap):
@@ -207,7 +209,8 @@ def run_fit(params, interpolator, met=1.):
 def plot_corner(samples, params, which="met1", 
                         plot_datapoints=False, smooth=1.,
                         quantiles=[0.16, 0.5, 0.84], title_kwargs={'fontsize':14},
-                        hist_kwargs={"linewidth":3}, rg=None, **kwargs):
+                        hist_kwargs={"linewidth":3}, rg=None, 
+                        show_titles=[True,False], **kwargs):
     """
     Corner plot for an emcee fit of the envelope mass fraction that matches
     the observed planet and system params
@@ -230,20 +233,20 @@ def plot_corner(samples, params, which="met1",
 
         fig = corner.corner(samples, labels=params["labels"], 
                             plot_datapoints=plot_datapoints, smooth=smooth,
-                            show_titles=True, quantiles=quantiles,
+                            show_titles=show_titles[0], quantiles=quantiles,
                             title_kwargs=title_kwargs, color=color,
                             hist_kwargs=hist_kwargs, range=rg, **kwargs)
     if which == "both":
         hist_kwargs["color"] = params["met50_color"]
         fig = corner.corner(samples[1], labels=params["labels"], 
                             plot_datapoints=plot_datapoints, smooth=smooth,
-                            show_titles=False, title_kwargs=title_kwargs,
+                            show_titles=show_titles[1], title_kwargs=title_kwargs,
                             color=params["met50_color"], hist_kwargs=hist_kwargs,
                             range=rg, **kwargs)
         hist_kwargs["color"] = params["met1_color"]
         corner.corner(samples[0], fig=fig, labels=params["labels"], 
                             plot_datapoints=plot_datapoints, smooth=smooth,
-                            show_titles=False, title_kwargs=title_kwargs,
+                            show_titles=show_titles[0], title_kwargs=title_kwargs,
                             color=params["met1_color"], hist_kwargs=hist_kwargs,
                             range=rg, **kwargs)
         
