@@ -11,7 +11,6 @@ Example script
 """
 
 # Import modules ---------- 
-from __future__ import division,print_function
 import numpy as np
 from smint import fit_fhhe
 import astropy.io as aio
