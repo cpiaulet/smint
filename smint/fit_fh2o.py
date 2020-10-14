@@ -12,50 +12,14 @@ Utilities functions
 """
 
 # Import modules ---------- 
-from __future__ import division,print_function
 import numpy as np
 from scipy.interpolate import RegularGridInterpolator
 import emcee
 import corner
-from copy import deepcopy
-import astropy.io as aio
-from astropy import table
-import pandas as pd
 
 #%% utilities for interpolation
 
-def read_zeng_table(fname, prints=False):
-    '''
-    Read the table containing Li Zeng's MR relations
-    '''
-    if prints:
-        print('\nReading in file: ',fname)
-    df = pd.read_csv(fname, sep='\t')
-    t = table.Table.from_pandas(df)
-    
-    # set properly column names
-    cnames = t.colnames
-    t[cnames[0]].name = 'Mass'
-    for c in t.colnames:
-        t[c].unit = t[c][0]
-    t.remove_row(0) # contained the units
-
-    df2 = t.to_pandas()
-    for c in df2.columns:
-        try:
-            df2[c] = pd.to_numeric(df2[c], downcast="float")
-        except:
-            continue
-    t2 = table.Table.from_pandas(df2)
-    
-    if prints:
-        print('\n')
-        print(t2)
-        print('\n')
-        print(t2.info)
-    return t2
-
-def find_radius_fh2o_table(t=None, interp=None, mass=10., fh2o=10.):
+def find_radius_fh2o(t=None, interp=None, mass=10., fh2o=10.):
     """
     Given a planet mass (in Earth masses) and a h2o mass fraction (%),
     get the best-matching planet radius (in Earth radii)
@@ -65,33 +29,13 @@ def find_radius_fh2o_table(t=None, interp=None, mass=10., fh2o=10.):
     r_earth = interp((fh2o,mass), method='linear')
     return r_earth
 
-def prep_table_interp_fh2o(params):
-    """
-    Takes as input the fit params and prepares the rock-h2o
-    table for the interpolator
-    """
-    t_large_zeng = read_zeng_table(params["path_folder_models"] + 'large_table_Zeng2016.txt')
-    
-    # isolate the rock-h2o compositions
-    col_rock_h2o = ['Mass']
-    for c in t_large_zeng.columns:
-        if 'o' in c:
-            if c in ['cold_h2/he', 'max_coll_strip']:
-                continue
-            col_rock_h2o.append(c)
-    t_rock_h2o = deepcopy(t_large_zeng[col_rock_h2o])
-    t_rock_h2o['rocky '].name = '0%h2o'
-    
-    return t_rock_h2o
 
-def make_interpolator_fh2o(params, t=None):
+def make_interpolator_fh2o(t):
     """
     Takes as an input t the table of rock-h2o mix
     make an interpolator for the planet radius as a function of 
     ['Mass', 'fh2o']
     """
-    if t is None:
-        t = prep_table_interp_fh2o(params)
     
     # make array of f_h2o_pc and planet radius values
     f_h2o_pc = []
@@ -121,7 +65,7 @@ def lnlike(theta, true_rad, true_rad_err, interp):
     fh2o, mass = theta 
     
     # estimate interpolated radius for these params
-    radius = find_radius_fh2o_table(t=None, interp=interp, mass=mass, fh2o=fh2o)
+    radius = find_radius_fh2o(t=None, interp=interp, mass=mass, fh2o=fh2o)
     return -0.5*(((true_rad-radius)/true_rad_err)**2)
 
 def lnprior(theta, mass_mu, mass_err):
@@ -190,6 +134,7 @@ def plot_corner(samples, params, plot_datapoints=False, smooth=1.,
     Returns the figure with the corner plot 
     """
     hist_kwargs["color"] = params["hist_color"]
+    color = params["hist_color"]
     fig = corner.corner(samples, labels=params["labels"], 
                         plot_datapoints=plot_datapoints, smooth=smooth,
                         show_titles=show_titles, quantiles=quantiles,
