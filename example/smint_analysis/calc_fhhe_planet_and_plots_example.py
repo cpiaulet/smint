@@ -15,6 +15,7 @@ from __future__ import division,print_function
 import numpy as np
 from smint import fit_fhhe
 import astropy.io as aio
+import pickle
 
 #%% Inputs for fit
 
@@ -84,6 +85,12 @@ print('\nSetting up the fit...')
 params = fit_fhhe.setup_priors(params)
 
 params = fit_fhhe.ini_fit(params)
+
+if params["save"]:
+    # save params dictionary
+    f = open(params["outputdir"]+params["fname"]+"_params"+".pkl","wb")
+    pickle.dump(params, f)
+    f.close()
 
 #%% Run the fit
 if params["run_fit"]==True and params["postprocess_oldfit"]==False:
