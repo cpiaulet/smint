@@ -15,6 +15,7 @@ from __future__ import division,print_function
 import numpy as np
 from smint import fit_fhhe
 import astropy.io as aio
+import pickle
 
 #%% Inputs for fit
 
@@ -26,15 +27,15 @@ params = dict()
 params["path_folder_models"] = '../smint_models/'
 
 # planet params (Mass and Radius in Earth masses)
-params["Mp_earth"] = 25.7
-params["err_Mp_earth"] = 2.9
+params["Mp_earth"] = 8.0
+params["err_Mp_earth"] = 2.1
 
-params["Rp_earth"] = 4.73
-params["err_Rp_earth"] = 0.16
+params["Rp_earth"] = 4.19
+params["err_Rp_earth"] = 0.09
 
 # incident flux at the planets in units of the solar constant
-params["Sinc_earth"] = 100.8
-params["err_Sinc_earth"] = 1.8
+params["Sinc_earth"] = 32.3
+params["err_Sinc_earth"] = 0.9
 
 # system params
 # for a flat prior on the age (used if flat_age==True)
@@ -49,23 +50,18 @@ params["err_age_Gyr"] = 3. # std of gaussian prior
 params["flat_age"] = True # if True, use flat prior on star's age
 params["log_fenv_prior"] = False # if True, prior on fenv uniform on log10
 
-# option for extrapolation
-# if True, uses extrapolated table (fenv up to 100%, mass up to 40 Mearth)
-# if False, uses original Lopez & Fortney table (fenv up to 20%, mass up to 20 Mearth)
-params["extrap"] = True 
-
-params["nsteps"] = 1000 # number of MCMC steps [1000 for testing, use much more]
+params["nsteps"] = 1000 # number of MCMC steps [for testing, use much more e.g. 10000]
 params["ndim"] = 4 # number of fitted params
 params["nwalkers"] = 100 # number of MCMC walkers
 
 params["run_fit"] = True # if True, runs the MCMC
-params["postprocess_oldfit"] = False # if True, no MCMC is run and old chains are loaded
+params["postprocess_oldfit"] = (params["run_fit"]==False) # if True, no MCMC is run and old chains are loaded
 params["frac_burnin"] = 0.6 # fraction of the chains to be discarded as burn-in
 
 # saving paths (OR path to chains if postprocess_oldfit==True)
-params["save"] = True # if True, save chains to npy files
+params["save"] = (params["run_fit"]==True) # if True, save chains to npy files
 params["outputdir"] = '../smint_results/'
-params["fname"] = 'test' # identifier for this fit (used for saving)
+params["fname"] = 'test_new' # identifier for this fit (used for saving)
 
 # plotting and printing options
 
@@ -85,13 +81,19 @@ params = fit_fhhe.setup_priors(params)
 
 params = fit_fhhe.ini_fit(params)
 
+if params["save"]:
+    # save params dictionary
+    f = open(params["outputdir"]+params["fname"]+"_params"+".pkl","wb")
+    pickle.dump(params, f)
+    f.close()
+
 #%% Run the fit
 if params["run_fit"]==True and params["postprocess_oldfit"]==False:
     
     print('\nGenerating the interpolator...')
-    path_file = params["path_folder_models"] + 'master_table_LF14_add_fenv_100_M_40.csv'
+    path_file = params["path_folder_models"] + 'master_table_LF14_20201014.csv'
     t = aio.ascii.read(path_file)
-    R_array = np.load(params["path_folder_models"] + 'LF14_add_fenv_100_M_40.npy')
+    R_array = np.load(params["path_folder_models"] + 'LF14_20201014.npy')
     interpolator = fit_fhhe.make_interpolator_LF14(t, R_array, log_fenv_prior=params["log_fenv_prior"])
 
     print('\nRunning the fit...')  
@@ -123,10 +125,10 @@ if params["corner_indiv"]:
     fig_met1 = fit_fhhe.plot_corner(samples_met1, params, which="met1")
     fig_met50 = fit_fhhe.plot_corner(samples_met50, params, which="met50")
     fig_met1.savefig(params['outputdir']+params["fname"]+'_corner_met1.png')
-    fig_met50.savefig(params['outputdir']+params["fname"]+'_corner_met1.png')
+    fig_met50.savefig(params['outputdir']+params["fname"]+'_corner_met50.png')
 
 if params["corner_both"]:
     print('\nPlotting corner plot with both metallicities...')
-    rg = [[0.,100.], [0., 40.], [0., 10.], [0., 1000.]] # None
+    rg = [[5.,20.], [0., 15.], [1., 10.], [27., 37.]] # None
     fig_both = fit_fhhe.plot_corner([samples_met1,samples_met50], params, which="both", rg=rg)
     fig_both.savefig(params['outputdir']+params["fname"]+'_corner_both.png')
