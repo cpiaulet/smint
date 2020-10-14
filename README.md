@@ -20,12 +20,12 @@ The dependencies of *smint* are *NumPy*, *scipy*, *emcee*, *corner* and *astropy
 ### Example
 Copy the three folders in smint/example/ wherever in your installation you want to run your code;
 
-## Standalone interpolator
+#### Standalone interpolator
 You can run smint_analysis/example_interpolator.py in order to get familiar with the interpolation tool.
 
 If instead you want to compute the distributions of water or H/He mass fractions given some planet and system parameters, you can use as reference one of the two other example scripts
 
-## MCMC fits
+#### MCMC fits
 The two other example scripts in smint_analysis/ illustrate respectively how to compute the distribution of H/He (fhhe) or water (fh2o) mass fractions given a planet mass and radius (and a few other parameters for the H/He mass fraction).
 
 For each of these scripts:
