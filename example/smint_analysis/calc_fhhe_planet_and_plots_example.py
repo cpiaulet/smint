@@ -55,11 +55,11 @@ params["ndim"] = 4 # number of fitted params
 params["nwalkers"] = 100 # number of MCMC walkers
 
 params["run_fit"] = True # if True, runs the MCMC
-params["postprocess_oldfit"] = False # if True, no MCMC is run and old chains are loaded
+params["postprocess_oldfit"] = (params["run_fit"]==False) # if True, no MCMC is run and old chains are loaded
 params["frac_burnin"] = 0.6 # fraction of the chains to be discarded as burn-in
 
 # saving paths (OR path to chains if postprocess_oldfit==True)
-params["save"] = True # if True, save chains to npy files
+params["save"] = (params["run_fit"]==True) # if True, save chains to npy files
 params["outputdir"] = '../smint_results/'
 params["fname"] = 'test' # identifier for this fit (used for saving)
 
