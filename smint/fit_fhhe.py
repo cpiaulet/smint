@@ -28,8 +28,8 @@ def find_radius_LF14_table(t=None, interp=None, met=1., age=1., log10_finc=0.,
     """
     if interp is None:
         interp = make_interpolator_LF14(t)
-    f_env_pc = interp((met,age,log10_finc,log10_mass,fenv), method='linear')
-    return f_env_pc
+    r_earth = interp((met,age,log10_finc,log10_mass,fenv), method='linear')
+    return r_earth
 
 def make_interpolator_LF14(t, R_array, log_fenv_prior=False):
     """
