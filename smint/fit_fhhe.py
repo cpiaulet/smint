@@ -71,7 +71,7 @@ def lnlike(theta, true_rad, true_rad_err, interp, met):
                                     fenv=fenv)
     return -0.5*(((true_rad-radius)/true_rad_err)**2)
 
-def lnprior(theta, mu, icovmat, flat_age, age_min, age_max, log_fenv_prior, extrap):
+def lnprior(theta, mu, icovmat, flat_age, age_min, age_max, log_fenv_prior):
     """
     prior (using known age distri, Finc distri, mass distri and flat in fenv
     or log fenv)
@@ -82,12 +82,9 @@ def lnprior(theta, mu, icovmat, flat_age, age_min, age_max, log_fenv_prior, extr
     else:
         fenv, mass, age, finc = theta
 
-    if extrap:
-        fenv_max = 100.
-        mass_max = 40.
-    else:
-        fenv_max = 20.
-        mass_max = 20.
+
+    fenv_max = 20.
+    mass_max = 20.
         
     if (fenv < 0.01) or (fenv > fenv_max):
         return -np.inf
@@ -109,11 +106,11 @@ def lnprior(theta, mu, icovmat, flat_age, age_min, age_max, log_fenv_prior, extr
         return -np.dot(diff, np.dot(icovmat, diff)) / 2.0
 
 def lnprob(theta, true_rad, true_rad_err, interp, met, mu, icovmat, 
-           flat_age=True, age_min=0.1, age_max=10., log_fenv_prior=True, extrap=False):
+           flat_age=True, age_min=0.1, age_max=10., log_fenv_prior=True):
     """
     Log-probability function
     """
-    lp = lnprior(theta, mu, icovmat, flat_age, age_min, age_max, log_fenv_prior, extrap)
+    lp = lnprior(theta, mu, icovmat, flat_age, age_min, age_max, log_fenv_prior)
     if not np.isfinite(lp):
         return -np.inf
     else:
@@ -192,7 +189,7 @@ def run_fit(params, interpolator, met=1.):
                                           interpolator, met, params["mu"],
                                           params["icovmat"], params["flat_age"],
                                           params["age_min"], params["age_max"], 
-                                          params["log_fenv_prior"], params['extrap']))
+                                          params["log_fenv_prior"]))
     
     print("\nRunning the emcee fit...")
     sampler.run_mcmc(params["pos0"], params["nsteps"])

@@ -50,11 +50,6 @@ params["err_age_Gyr"] = 3. # std of gaussian prior
 params["flat_age"] = True # if True, use flat prior on star's age
 params["log_fenv_prior"] = False # if True, prior on fenv uniform on log10
 
-# option for extrapolation
-# if True, uses extrapolated table (fenv up to 100%, mass up to 40 Mearth)
-# if False, uses original Lopez & Fortney table (fenv up to 20%, mass up to 20 Mearth)
-params["extrap"] = True 
-
 params["nsteps"] = 1000 # number of MCMC steps [1000 for testing, use much more]
 params["ndim"] = 4 # number of fitted params
 params["nwalkers"] = 100 # number of MCMC walkers
