@@ -18,7 +18,7 @@ import corner
 
 #%% utilities for interpolation
 
-def find_radius_LF14_table(t=None, interp=None, met=1., age=1., log10_finc=0.,
+def find_radius_fenv(t=None, interp=None, met=1., age=1., log10_finc=0.,
                            log10_mass=1., fenv=10.):
     """
     Given a metallicity, an age, an incident flux and a planet mass and envelope
@@ -34,6 +34,7 @@ def make_interpolator_LF14(t, R_array, log_fenv_prior=False):
     """
     make an interpolator for the planet radius as a function of 
     ['metallicity_solar','age_Gyr', 'F_inc_oplus','Mass_oplus','f_env_pc']
+    using the Lopez & Fortney (2014) grid
     the interpolation is linear with the log10 of the flux and planet mass
     log_fenv_prior: if True, interpolate linearly in log space
     """
@@ -65,12 +66,12 @@ def lnlike(theta, true_rad, true_rad_err, interp, met):
     fenv, mass, age, finc = theta 
     
     # estimate interpolated radius for these params
-    radius = find_radius_LF14_table(t=None, interp=interp, met=met, age=age, 
+    radius = find_radius_fenv(t=None, interp=interp, met=met, age=age, 
                                     log10_finc=np.log10(finc), log10_mass=np.log10(mass),
                                     fenv=fenv)
     return -0.5*(((true_rad-radius)/true_rad_err)**2)
 
-def lnprior(theta, mu, icovmat, flat_age, age_min, age_max, log_fenv_prior):
+def lnprior(theta, mu, icovmat, flat_age, age_min, age_max, log_fenv_prior, grid_lim):
     """
     prior (using known age distri, Finc distri, mass distri and flat in fenv
     or log fenv)
@@ -80,21 +81,17 @@ def lnprior(theta, mu, icovmat, flat_age, age_min, age_max, log_fenv_prior):
         fenv = 10**log10_fenv
     else:
         fenv, mass, age, finc = theta
-
-
-    fenv_max = 20.
-    mass_max = 20.
-        
-    if (fenv < 0.01) or (fenv > fenv_max):
+            
+    if (fenv < grid_lim['fenv'][0]) or (fenv > grid_lim['fenv'][1]):
         return -np.inf
-    if (mass < 1.0) + (mass > mass_max):
+    if (mass < grid_lim['mass'][0]) or (mass > grid_lim['mass'][1]):
         return -np.inf
-    if (age < 0.1) + (age > 10.):
+    if (age < grid_lim['age'][0]) or (age > grid_lim['age'][1]):
         return -np.inf
     if flat_age:
-        if (age < age_min) + (age > age_max):
+        if (age < age_min) or (age > age_max):
             return -np.inf
-    if (finc < 0.1) + (finc > 1000.):
+    if (finc < grid_lim['finc'][0]) or (finc > grid_lim['finc'][1]):
         return -np.inf
     else:
         if flat_age:
@@ -104,12 +101,13 @@ def lnprior(theta, mu, icovmat, flat_age, age_min, age_max, log_fenv_prior):
         diff = arr - mu
         return -np.dot(diff, np.dot(icovmat, diff)) / 2.0
 
-def lnprob(theta, true_rad, true_rad_err, interp, met, mu, icovmat, 
+def lnprob(theta, true_rad, true_rad_err, interp, met, mu, icovmat, grid_lim,
            flat_age=True, age_min=0.1, age_max=10., log_fenv_prior=True):
     """
     Log-probability function
     """
-    lp = lnprior(theta, mu, icovmat, flat_age, age_min, age_max, log_fenv_prior)
+    lp = lnprior(theta, mu, icovmat, flat_age, age_min, age_max,
+                 log_fenv_prior, grid_lim)
     if not np.isfinite(lp):
         return -np.inf
     else:
@@ -148,9 +146,11 @@ def setup_priors(params):
     
     return params
 
-def ini_fit(params):
+def ini_fit(params, grid_lim=None):
     """
     input: params of the fit
+    grid_lim: dict with the lower and upper bounds on the grid params
+    if None, uses the bounds from the Lopez & Fortney (2014) grid
     output: initial positions of the walkers and labels for the fitted para
     """
 
@@ -169,6 +169,14 @@ def ini_fit(params):
     params["pos0"] = [x0 + np.array([fenv_unc, 2.*params["Mp_earth"], 1., 10.])\
                      * np.random.randn(params["ndim"]) for i in range(params["nwalkers"])]
 
+    if grid_lim is None:
+        grid_lim = dict()
+        grid_lim['fenv'] = [0.01, 20.]
+        grid_lim['mass'] = [1.0, 20.]
+        grid_lim['age'] = [0.1, 10.]
+        grid_lim['finc'] = [0.1, 1000.]
+    
+    params["grid_lim"] = grid_lim
     return params
 
 
@@ -186,9 +194,9 @@ def run_fit(params, interpolator, met=1.):
     sampler = emcee.EnsembleSampler(params["nwalkers"], params["ndim"], lnprob,
                                     args=(params["Rp_earth"],params["err_Rp_earth"],
                                           interpolator, met, params["mu"],
-                                          params["icovmat"], params["flat_age"],
-                                          params["age_min"], params["age_max"], 
-                                          params["log_fenv_prior"]))
+                                          params["icovmat"], params["grid_lim"], 
+                                          params["flat_age"], params["age_min"],
+                                          params["age_max"], params["log_fenv_prior"]))
     
     print("\nRunning the emcee fit...")
     sampler.run_mcmc(params["pos0"], params["nsteps"])
