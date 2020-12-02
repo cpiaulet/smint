@@ -1,7 +1,8 @@
 # smint
-*smint* (Structure Model INTerpolator) is a tool to obtain posterior distributions on the H/He or H2O mass fraction of a planet based upon interpolation onto the Lopez & Fortney (2014) and Zeng (2016) model grids.
+*smint* (Structure Model INTerpolator) is a tool to obtain posterior distributions on the H/He or H2O mass fraction of a planet based upon interpolation onto the Lopez & Fortney (2014) and Zeng (2016) model grids. 
 
 If you use this code, please cite Caroline Piaulet as well as Lopez & Fortney (2014) and Zeng et al. (2016): 
+* https://ui.adsabs.harvard.edu/abs/2020arXiv201113444P/abstract (first paper describing the code) 
 * https://ui.adsabs.harvard.edu/abs/2014ApJ...792....1L/abstract
 * https://ui.adsabs.harvard.edu/abs/2016ApJ...819..127Z/abstract
 
