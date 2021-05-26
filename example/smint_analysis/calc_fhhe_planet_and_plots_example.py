@@ -36,7 +36,7 @@ def main(argv):
     if len(argv)>1:
         iniFile=argv[1]
     else:
-        iniFile='/Users/caroline/Research/GitHub/smint_analysis/template_ini_fhhe.ini'
+        iniFile='../smint_analysis/template_ini_fhhe.ini'
             
     if not os.path.exists(iniFile):
         print('USER ERROR: iniFile does not exist.')
