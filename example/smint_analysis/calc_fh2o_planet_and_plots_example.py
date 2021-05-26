@@ -24,11 +24,12 @@ import argparse
 from copy import deepcopy
 import pdb
 import sys
+from astropy import table
+
 
 #%% The main code starts here
 
-def main(argv): 
-    
+def main(argv):
     '''
     Example:
 	python calc_hhe_planet_and_plots_example.py template_ini.ini
@@ -37,7 +38,7 @@ def main(argv):
     if len(argv)>1:
         iniFile=argv[1]
     else:
-        iniFile='../smint_analysis/template_ini_h2o.ini'
+        iniFile='template_ini_h2o.ini'
             
     if not os.path.exists(iniFile):
         print('USER ERROR: iniFile does not exist.')
@@ -114,6 +115,10 @@ def main(argv):
         print('\nExtracting samples...')
         samples = sampler.chain[:, int(params["frac_burnin"]*params["nsteps"]):, :].reshape((-1, params["ndim"]))
     
+    #%% Save and print median +/- sigma
+    if params["run_fit"]==True and params["postprocess_oldfit"]==False:
+        print("\nCalculating parameter constraints...")
+        fit_fh2o.calc_constraints(samples, params)
     
     #%% If loading from an old fit
     
@@ -129,6 +134,5 @@ def main(argv):
         fig.savefig(params['outputdir']+params["fname"]+'_corner.png')
 
 #%%
-
 if __name__ == "__main__":
     main(sys.argv)
