@@ -157,11 +157,11 @@ def ini_fit(params, grid_lim=None):
     if params["log_fenv_prior"]:
         fenv_ini = 0.
         fenv_unc = 1.
-        fenv_label = r"$\log_{10}$ f$_{HHe}$ [%]"
+        fenv_label = r"$\log_{10}$ f$_{env}$ [%]"
     else:
         fenv_ini = 10.
         fenv_unc = 10.
-        fenv_label = r"f$_{HHe}$ [%]"
+        fenv_label = r"f$_{env}$ [%]"
     x0 = np.array([fenv_ini, params["Mp_earth"], params["age_Gyr"], params["Sinc_earth"]])
     
     params["labels"] = [fenv_label, r"M$_p$ [M$_\oplus$]", "Age [Gyr]", r"S$_{inc}$ [S$_\oplus$]"]

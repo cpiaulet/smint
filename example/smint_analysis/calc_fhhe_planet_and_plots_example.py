@@ -13,121 +13,145 @@ Example script
 # Import modules ---------- 
 import numpy as np
 from smint import fit_fhhe
-import astropy.io as aio
+# import astropy.io as aio
+from astropy.io import ascii as aioascii
+
 import pickle
+import os
+import configparser
+import argparse
+from copy import deepcopy
+import pdb
+import sys
 
-#%% Inputs for fit
+#%% The main code starts here
 
-print('\nReading in the inputs...')
-
-params = dict()
-
-# path to folder containing Lopez & Fortney models
-params["path_folder_models"] = '../smint_models/'
-
-# planet params (Mass and Radius in Earth masses)
-params["Mp_earth"] = 8.0
-params["err_Mp_earth"] = 2.1
-
-params["Rp_earth"] = 4.19
-params["err_Rp_earth"] = 0.09
-
-# incident flux at the planets in units of the solar constant
-params["Sinc_earth"] = 32.3
-params["err_Sinc_earth"] = 0.9
-
-# system params
-# for a flat prior on the age (used if flat_age==True)
-params["age_Gyr_inf"] = 1. # lower bound
-params["age_Gyr_sup"] = 10. # upper bound
-
-# alternatively, for a gaussian prior (used if flat_age==False)
-params["age_Gyr"] = 5. # median of gaussian prior
-params["err_age_Gyr"] = 3. # std of gaussian prior
-
-# params for the MCMC
-params["flat_age"] = True # if True, use flat prior on star's age
-params["log_fenv_prior"] = False # if True, prior on fenv uniform on log10
-
-params["nsteps"] = 1000 # number of MCMC steps [for testing, use much more e.g. 10000]
-params["ndim"] = 4 # number of fitted params
-params["nwalkers"] = 100 # number of MCMC walkers
-
-params["run_fit"] = True # if True, runs the MCMC
-params["postprocess_oldfit"] = (params["run_fit"]==False) # if True, no MCMC is run and old chains are loaded
-params["frac_burnin"] = 0.6 # fraction of the chains to be discarded as burn-in
-
-# saving paths (OR path to chains if postprocess_oldfit==True)
-params["save"] = (params["run_fit"]==True) # if True, save chains to npy files
-params["outputdir"] = '../smint_results/'
-params["fname"] = 'test_new' # identifier for this fit (used for saving)
-
-# plotting and printing options
-
-# colors for corner and histograms
-params["met1_color"] = 'b' # color in histograms for metallicity = 1*solar
-params["met50_color"] = 'g' # color in histograms for metallicity = 50*solar
-
-params["corner_indiv"] = True # if True, plot individual corner plots for each fit
-params["corner_both"] = True # if True, plot both corner plots superimposed
-
-#%% End of user input
-
-#%% Setting up the fit
-
-print('\nSetting up the fit...')
-params = fit_fhhe.setup_priors(params)
-
-params = fit_fhhe.ini_fit(params)
-
-if params["save"]:
-    # save params dictionary
-    f = open(params["outputdir"]+params["fname"]+"_params"+".pkl","wb")
-    pickle.dump(params, f)
-    f.close()
-
-#%% Run the fit
-if params["run_fit"]==True and params["postprocess_oldfit"]==False:
+def main(argv): 
     
-    print('\nGenerating the interpolator...')
-    path_file = params["path_folder_models"] + 'master_table_LF14_20201014.csv'
-    t = aio.ascii.read(path_file)
-    R_array = np.load(params["path_folder_models"] + 'LF14_20201014.npy')
-    interpolator = fit_fhhe.make_interpolator_LF14(t, R_array, log_fenv_prior=params["log_fenv_prior"])
-
-    print('\nRunning the fit...')  
+    '''
+    Example:
+	python calc_hhe_planet_and_plots_example.py template_ini.ini
+    '''
     
-    print('\nmet = 1*solar:')
-    sampler_met1 = fit_fhhe.run_fit(params, interpolator, met=1.)
+    if len(argv)>1:
+        iniFile=argv[1]
+    else:
+        iniFile='/Users/caroline/Research/GitHub/smint_analysis/template_ini_fhhe.ini'
+            
+    if not os.path.exists(iniFile):
+        print('USER ERROR: iniFile does not exist.')
+        raise
+    config = configparser.ConfigParser()
+    config.read(iniFile)
+
+
+    #%% Inputs for fit
     
-    print('\nmet = 50*solar:')
-    sampler_met50 = fit_fhhe.run_fit(params, interpolator, met=50.)
+    print('\nReading in the inputs...')
 
-    print('\nExtracting samples...')
-    # extract samples 
-    samples_met1 = sampler_met1.chain[:, int(params["frac_burnin"]*params["nsteps"]):, :].reshape((-1, params["ndim"]))
-    samples_met50 = sampler_met50.chain[:, int(params["frac_burnin"]*params["nsteps"]):, :].reshape((-1, params["ndim"]))
+    parser = argparse.ArgumentParser(description='Inputs for the code.')
+    
+    parser.add_argument('-path_folder_models', help='path to folder containing Lopez & Fortney + Zeng models', default=config.get('paths','path_folder_models'))
+    parser.add_argument('-outputdir', help='saving path (OR path to chains if run_fit==False)', default=config.get('paths','outputdir'))
+    parser.add_argument('-fname', help='identifier for this fit (used for saving)', default=config.get('paths','fname'))
+
+    parser.add_argument('-Mp_earth', help='planet mass (in Mearth)', default=config.getfloat('physical params','Mp_earth'))
+    parser.add_argument('-err_Mp_earth', help='planet mass uncertainty (in Mearth)', default=config.getfloat('physical params','err_Mp_earth'))
+    parser.add_argument('-Rp_earth', help='planet radius (in Rearth)', default=config.getfloat('physical params','Rp_earth'))
+    parser.add_argument('-err_Rp_earth', help='planet radius uncertainty (in Rearth)', default=config.getfloat('physical params','err_Rp_earth'))
+    parser.add_argument('-Sinc_earth', help='incident flux at the planet in units of the solar constant', default=config.getfloat('physical params','Sinc_earth'))
+    parser.add_argument('-err_Sinc_earth', help='uncertainty on incident flux at the planet in units of the solar constant', default=config.getfloat('physical params','err_Sinc_earth'))
+    
+    parser.add_argument('-age_Gyr_inf', help='lower bound on system age in Gyr for flat age prior', default=config.getfloat('physical params','age_Gyr_inf'))
+    parser.add_argument('-age_Gyr_sup', help='upper bound on system age in Gyr for flat age prior', default=config.getfloat('physical params','age_Gyr_sup'))
+    parser.add_argument('-age_Gyr', help='mean of gaussian prior on system age in Gyr', default=config.getfloat('physical params','age_Gyr'))
+    parser.add_argument('-err_age_Gyr', help='std of gaussian prior on system age in Gyr', default=config.getfloat('physical params','err_age_Gyr'))
+
+    parser.add_argument('-flat_age', help='bool. if True, use flat prior on stellar age', default=config.getboolean('MCMC params','flat_age'))
+    parser.add_argument('-log_fenv_prior', help='bool. if True, prior on fenv uniform on log10', default=config.getboolean('MCMC params','log_fenv_prior'))
+    parser.add_argument('-nsteps', help='number of MCMC steps', default=config.getint('MCMC params','nsteps'))
+    parser.add_argument('-ndim', help='number of fitted params', default=config.getint('MCMC params','ndim'))
+    parser.add_argument('-nwalkers', help='number of MCMC walkers', default=config.getint('MCMC params','nwalkers'))
+    parser.add_argument('-run_fit', help='bool. if True, runs the MCMC; otherwise, postprocess an existing fit', default=config.getboolean('MCMC params','run_fit'))
+    parser.add_argument('-frac_burnin', help='fraction of the chains to be discarded as burn-in [range 0--1]', default=config.getfloat('MCMC params','frac_burnin'))
+    
+    parser.add_argument('-met1_color', help='color in histograms for metallicity = 1*solar', default=config.get('plotting','met1_color'))
+    parser.add_argument('-met50_color', help='color in histograms for metallicity = 50*solar', default=config.get('plotting','met50_color'))
+    parser.add_argument('-corner_indiv', help='bool. if True, plot individual corner plots for each fit', default=config.getboolean('plotting','corner_indiv'))
+    parser.add_argument('-corner_both', help='bool. if True, plot both corner plots superimposed', default=config.getboolean('plotting','corner_both'))
+
+    args, unknown = parser.parse_known_args()
+
+    # make the params dict from the parser object
+
+    params = deepcopy(args.__dict__)
+    
+    params["postprocess_oldfit"] = (params["run_fit"]==False) # if True, no MCMC is run and old chains are loaded    
+    params["save"] = (params["run_fit"]==True) # if True, save chains to npy files
 
 
-#%% If loading from an old fit
-if params["postprocess_oldfit"]:
-    print('\nLoading chains from previous fit...')
-    samples_met1 = np.load(params["outputdir"]+params["fname"]+'_chains_met1.npy')
-    samples_met50 = np.load(params["outputdir"]+params["fname"]+'_chains_met50.npy')
-    samples_met1 = samples_met1[:, int(params["frac_burnin"]*samples_met1.shape[1]):, :].reshape((-1, params["ndim"]))
-    samples_met50 = samples_met50[:, int(params["frac_burnin"]*samples_met50.shape[1]):, :].reshape((-1, params["ndim"]))
+    #%% End of user input
+    
+    #%% Setting up the fit
+    
+    print('\nSetting up the fit...')
+    params = fit_fhhe.setup_priors(params)
+    
+    params = fit_fhhe.ini_fit(params)
+    
+    if params["save"]:
+        # save params dictionary
+        f = open(params["outputdir"]+params["fname"]+"_params"+".pkl","wb")
+        pickle.dump(params, f)
+        f.close()
+    
+    #%% Run the fit
+    if params["run_fit"]==True and params["postprocess_oldfit"]==False:
+        
+        print('\nGenerating the interpolator...')
+        path_file = params["path_folder_models"] + 'master_table_LF14_20201014.csv'
+        t = aioascii.read(path_file)
+        R_array = np.load(params["path_folder_models"] + 'LF14_20201014.npy')
+        interpolator = fit_fhhe.make_interpolator_LF14(t, R_array, log_fenv_prior=params["log_fenv_prior"])
+    
+        print('\nRunning the fit...')  
+        
+        print('\nmet = 1*solar:')
+        sampler_met1 = fit_fhhe.run_fit(params, interpolator, met=1.)
+        
+        print('\nmet = 50*solar:')
+        sampler_met50 = fit_fhhe.run_fit(params, interpolator, met=50.)
+    
+        print('\nExtracting samples...')
+        # extract samples 
+        samples_met1 = sampler_met1.chain[:, int(params["frac_burnin"]*params["nsteps"]):, :].reshape((-1, params["ndim"]))
+        samples_met50 = sampler_met50.chain[:, int(params["frac_burnin"]*params["nsteps"]):, :].reshape((-1, params["ndim"]))
+    
+    
+    #%% If loading from an old fit
+    if params["postprocess_oldfit"]:
+        print('\nLoading chains from previous fit...')
+        samples_met1 = np.load(params["outputdir"]+params["fname"]+'_chains_met1.npy')
+        samples_met50 = np.load(params["outputdir"]+params["fname"]+'_chains_met50.npy')
+        samples_met1 = samples_met1[:, int(params["frac_burnin"]*samples_met1.shape[1]):, :].reshape((-1, params["ndim"]))
+        samples_met50 = samples_met50[:, int(params["frac_burnin"]*samples_met50.shape[1]):, :].reshape((-1, params["ndim"]))
+    
+    
+    #%% corner plot for each 
+    if params["corner_indiv"]:
+        print('\nPlotting individual corner plots...')
+        fig_met1 = fit_fhhe.plot_corner(samples_met1, params, which="met1")
+        fig_met50 = fit_fhhe.plot_corner(samples_met50, params, which="met50")
+        fig_met1.savefig(params['outputdir']+params["fname"]+'_corner_met1.png')
+        fig_met50.savefig(params['outputdir']+params["fname"]+'_corner_met50.png')
+    
+    if params["corner_both"]:
+        print('\nPlotting corner plot with both metallicities...')
+        rg = [[5.,20.], [0., 15.], [1., 10.], [27., 37.]] # None
+        fig_both = fit_fhhe.plot_corner([samples_met1,samples_met50], params, which="both", rg=rg)
+        fig_both.savefig(params['outputdir']+params["fname"]+'_corner_both.png')
+    
+#%%
 
-
-#%% corner plot for each 
-if params["corner_indiv"]:
-    print('\nPlotting individual corner plots...')
-    fig_met1 = fit_fhhe.plot_corner(samples_met1, params, which="met1")
-    fig_met50 = fit_fhhe.plot_corner(samples_met50, params, which="met50")
-    fig_met1.savefig(params['outputdir']+params["fname"]+'_corner_met1.png')
-    fig_met50.savefig(params['outputdir']+params["fname"]+'_corner_met50.png')
-
-if params["corner_both"]:
-    print('\nPlotting corner plot with both metallicities...')
-    rg = [[5.,20.], [0., 15.], [1., 10.], [27., 37.]] # None
-    fig_both = fit_fhhe.plot_corner([samples_met1,samples_met50], params, which="both", rg=rg)
-    fig_both.savefig(params['outputdir']+params["fname"]+'_corner_both.png')
+if __name__ == "__main__":
+    main(sys.argv)
