@@ -33,7 +33,7 @@ Here is an example one-liner to run a fit of the H/He mass fraction of a planet 
 
     python calc_fhhe_planet_and_plots_example.py template_ini_hhe.ini
 
-For each of these scripts:
+A few additional tips:
 * The "ini file" (.ini) contains all the user input necessary to run the code, including planet and mcmc parameters, saving path and plotting options
 * The path to an "ini file" needs to be provided to the python (.py) script (if different from the default) *or* provided as an argument if the script is run from the command line
 * The python files can be run as long as the relative path to the models and results directories are correct;
