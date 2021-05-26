@@ -27,12 +27,15 @@ You can run smint_analysis/example_interpolator.py in order to get familiar with
 If instead you want to compute the distributions of water or H/He mass fractions given some planet and system parameters, you can use as reference one of the two other example scripts
 
 #### MCMC fits
-The two other example scripts in smint_analysis/ illustrate respectively how to compute the distribution of H/He (fhhe) or water (fh2o) mass fractions given a planet mass and radius (and a few other parameters for the H/He mass fraction). Parameters can be modified from the default values using a config file, two examples of which are provided as template_ini_X.ini.
+The two other example scripts in smint_analysis/ illustrate respectively how to compute the distribution of H/He (fhhe) or water (fh2o) mass fractions given a planet mass and radius (and a few other parameters for the H/He mass fraction). Parameters can be modified from the default values using a config file, two examples of which are provided as template_ini_X.ini. 
+
+Here is an example one-liner to run a fit of the H/He mass fraction of a planet using planet paramters in the template_ini_hhe.ini config file:
+`<python calc_fhhe_planet_and_plots_example.py template_ini_hhe.ini>`
 
 For each of these scripts:
 * The "ini file" (.ini) contains all the user input necessary to run the code, including planet and mcmc parameters, saving path and plotting options
 * The path to an "ini file" needs to be provided to the python (.py) script (if different from the default) *or* provided as an argument if the script is run from the command line
 * The python files can be run as long as the relative path to the models and results directories are correct;
 * Each script illustrates an example of how to initialize, run and postprocess a fit using *smint*;
-* The output files (pickle file recording the fit parameters, MCMC chains and corner plots) which are produced when running the example scripts as is are already in smint/example/smint_results ("test_new" files for the H/He fraction and "test_fh2o" files for the H2O mass fraction).
+* The output files (pickle file recording the fit parameters, MCMC chains, csv file containing median and percentile values, corner plots) which are produced when running the example scripts as is are already in smint/example/smint_results ("test_new" files for the H/He fraction and "test_fh2o" files for the H2O mass fraction).
 
