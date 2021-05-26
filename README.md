@@ -30,7 +30,8 @@ If instead you want to compute the distributions of water or H/He mass fractions
 The two other example scripts in smint_analysis/ illustrate respectively how to compute the distribution of H/He (fhhe) or water (fh2o) mass fractions given a planet mass and radius (and a few other parameters for the H/He mass fraction). Parameters can be modified from the default values using a config file, two examples of which are provided as template_ini_X.ini. 
 
 Here is an example one-liner to run a fit of the H/He mass fraction of a planet using planet paramters in the template_ini_hhe.ini config file:
-`<python calc_fhhe_planet_and_plots_example.py template_ini_hhe.ini>`
+
+    python calc_fhhe_planet_and_plots_example.py template_ini_hhe.ini
 
 For each of these scripts:
 * The "ini file" (.ini) contains all the user input necessary to run the code, including planet and mcmc parameters, saving path and plotting options
