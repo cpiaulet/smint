@@ -90,7 +90,7 @@ def main(argv):
     
     # set initial walker positions
     params["pos0"] = [np.array([50., params["Mp_earth"]]) \
-                     + np.array([40., params["err_Mp_earth"]]) \
+                     + np.array([20., params["err_Mp_earth"]]) \
                          * np.random.randn(params["ndim"]) for i in range(params["nwalkers"])]
     
     
