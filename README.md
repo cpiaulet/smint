@@ -6,7 +6,7 @@ If you use this code, please cite Caroline Piaulet as well as Lopez & Fortney (2
 * https://ui.adsabs.harvard.edu/abs/2014ApJ...792....1L/abstract
 * https://ui.adsabs.harvard.edu/abs/2016ApJ...819..127Z/abstract
 
-Feel free to contribute to this tool by raising issues or submitting pull requests.
+Feel free to contribute to this tool by raising issues or submitting pull requests. Any questions or requests can also be addressed to caroline.piaulet@umontreal.ca.
 
 ## Installation
 You can install *smint* from GitHub:
