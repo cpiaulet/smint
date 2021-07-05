@@ -36,11 +36,10 @@ def main(argv):
     if len(argv)>1:
         iniFile=argv[1]
     else:
-        iniFile='../smint_analysis/template_ini_fhhe.ini'
+        iniFile='template_ini_hhe.ini'
             
     if not os.path.exists(iniFile):
-        print('USER ERROR: iniFile does not exist.')
-        raise
+        raise FileNotFoundError('USER ERROR: iniFile does not exist.')
     config = configparser.ConfigParser()
     config.read(iniFile)
 
@@ -126,7 +125,16 @@ def main(argv):
         # extract samples 
         samples_met1 = sampler_met1.chain[:, int(params["frac_burnin"]*params["nsteps"]):, :].reshape((-1, params["ndim"]))
         samples_met50 = sampler_met50.chain[:, int(params["frac_burnin"]*params["nsteps"]):, :].reshape((-1, params["ndim"]))
+
+    #%% Save and print median +/- sigma
+    if params["run_fit"]==True and params["postprocess_oldfit"]==False:
+
+        print("\nCalculating parameter constraints...")
+        print("\nMetallicity = 1xsolar:\n")
+        fit_fhhe.calc_constraints(samples_met1, params, suffix="_met1")    
     
+        print("\nMetallicity = 50xsolar:\n")
+        fit_fhhe.calc_constraints(samples_met50, params, suffix="_met50")    
     
     #%% If loading from an old fit
     if params["postprocess_oldfit"]:
