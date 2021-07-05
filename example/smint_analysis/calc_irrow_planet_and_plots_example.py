@@ -13,17 +13,12 @@ Example script
 
 # Import modules ---------- 
 import numpy as np
-# from smint import fit_fh2o
-import fit_irrow
-# import astropy.io as aio
-from astropy.io import ascii as aioascii
-
+from smint import fit_irrow
 import pickle
 import os
 import configparser
 import argparse
 from copy import deepcopy
-import pdb
 import sys
 
 #%% The main code starts here
@@ -59,11 +54,15 @@ def main(argv):
 
     parser.add_argument('-Mp_earth', help='planet mass (in Mearth)', default=config.getfloat('physical params','Mp_earth'))
     parser.add_argument('-err_Mp_earth', help='planet mass uncertainty (in Mearth)', default=config.getfloat('physical params','err_Mp_earth'))
+    parser.add_argument('-use_KDE_for_Mp_prior', help='bool. if True, use KDE prior on the mass', default=config.getboolean('physical params','use_KDE_for_Mp_prior'))
+    parser.add_argument('-path_file_kde_points', help='path to npy array of points where mass KDE is evaluated (in Mearth)', default=config.get('physical params','path_file_kde_points'))
+    parser.add_argument('-path_file_kde_density', help='path to npy array of KDE evaluated at kde_points', default=config.get('physical params','path_file_kde_density'))
     parser.add_argument('-Rp_earth', help='planet radius (in Rearth)', default=config.getfloat('physical params','Rp_earth'))
     parser.add_argument('-err_Rp_earth', help='planet radius uncertainty (in Rearth)', default=config.getfloat('physical params','err_Rp_earth'))
     parser.add_argument('-Tirr', help='planet irradiation T (in K)', default=config.getfloat('physical params','Tirr'))
-    parser.add_argument('-err_Tirr', help='planet irradiation T uncertainty(in K)', default=config.getfloat('physical params','err_Tirr'))
+    parser.add_argument('-err_Tirr', help='planet irradiation T uncertainty (in K)', default=config.getfloat('physical params','err_Tirr'))
 
+    parser.add_argument('-Tirr_min', help='lower bound of Tirr prior (in K)', default=config.getfloat('MCMC params','Tirr_min'))
     parser.add_argument('-nsteps', help='number of MCMC steps', default=config.getint('MCMC params','nsteps'))
     parser.add_argument('-ndim', help='number of fitted params', default=config.getint('MCMC params','ndim'))
     parser.add_argument('-nwalkers', help='number of MCMC walkers', default=config.getint('MCMC params','nwalkers'))
@@ -120,7 +119,8 @@ def main(argv):
         print('\nLoading chains from previous fit...')
         samples = np.load(params["outputdir"]+params["fname"]+'_chains.npy')
         samples = samples[:, int(params["frac_burnin"]*samples.shape[1]):, :].reshape((-1, params["ndim"]))
-    
+
+        
     #%% corner plot for each 
     if params["plot_corner"]:
         print('\nGenerating corner plot...')

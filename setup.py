@@ -5,7 +5,7 @@ with open("smint/version.py", "r") as f:
 
 setup(name='smint',
       version=__version__,
-      description='Inferring HHe and H2O mass fractions using the Lopez&Fortney 2014 and Zeng 2016 model grids',
+      description='Inferring HHe and H2O mass fractions using the Lopez&Fortney 2014, Zeng 2016 and Aguichine 2021 model grids',
       url='http://github.com/cpiaulet/smint',
       author='Caroline Piaulet',
       author_email='caroline.piaulet@umontreal.ca',
