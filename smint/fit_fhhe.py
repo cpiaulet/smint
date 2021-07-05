@@ -168,7 +168,8 @@ def ini_fit(params, grid_lim=None):
     
     params["labels"] = [fenv_label, r"M$_p$ [M$_\oplus$]", "Age [Gyr]", r"S$_{inc}$ [S$_\oplus$]"]
     
-    params["pos0"] = [x0 + np.array([fenv_unc, params["err_Mp_earth"], 1., 10.])\
+    params["pos0"] = [x0 + np.array([fenv_unc, params["err_Mp_earth"], 1., params["err_Sinc_earth"]])\
+
                      * np.random.randn(params["ndim"]) for i in range(params["nwalkers"])]
 
     if grid_lim is None:
