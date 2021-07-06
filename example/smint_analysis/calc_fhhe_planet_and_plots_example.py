@@ -21,7 +21,6 @@ import os
 import configparser
 import argparse
 from copy import deepcopy
-import pdb
 import sys
 
 #%% The main code starts here

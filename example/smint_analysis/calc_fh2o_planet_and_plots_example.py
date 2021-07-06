@@ -22,9 +22,7 @@ import os
 import configparser
 import argparse
 from copy import deepcopy
-import pdb
 import sys
-from astropy import table
 
 
 #%% The main code starts here
@@ -32,7 +30,7 @@ from astropy import table
 def main(argv):
     '''
     Example:
-	python calc_hhe_planet_and_plots_example.py template_ini.ini
+	python calc_h2o_planet_and_plots_example.py template_ini_h2o.ini
     '''
         
     if len(argv)>1:
