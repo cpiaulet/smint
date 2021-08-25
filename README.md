@@ -28,7 +28,7 @@ If instead you want to compute the distributions of water or H/He mass fractions
 
 
 #### MCMC fits
-The example scripts in smint_analysis/ (```calc_X_planet_and_plots_example.py```) illustrate respectively how to compute the distribution of H/He (```X=fhhe```) or water mass fractions from the Zeng et al. 2019 water models (```X=fh2o```) or the Aguichine et al. 2021 irradiated ocean worlds models (```X=irrow```) given basic planet parameters. Parameters of the planet, star, MCMC fits and plots can be modified from the default values using a config file, examples of which are provided for each type of fit as ```template_ini_X.ini```. 
+The example scripts in smint_analysis/ (```calc_X_planet_and_plots_example.py```) illustrate respectively how to compute the distribution of H/He (```X=fhhe```) or water mass fractions from the Zeng et al. 2016 water models (```X=fh2o```) or the Aguichine et al. 2021 irradiated ocean worlds models (```X=irrow```) given basic planet parameters. Parameters of the planet, star, MCMC fits and plots can be modified from the default values using a config file, examples of which are provided for each type of fit as ```template_ini_X.ini```. 
 
 Here is an example one-liner to run a fit of the H/He mass fraction of a planet using planet parameters in the template_ini_hhe.ini config file:
 
@@ -43,7 +43,7 @@ A few additional tips:
 ```
 * The python files can be run as long as the relative path to the models and results directories are correct;
 * Each script illustrates an example of how to initialize, run and postprocess a fit using *smint*;
-* The output files (pickle file recording the fit parameters, MCMC chains, csv file containing median and percentile values, corner plots) which are produced when running the example scripts as is are already in smint/example/smint_results ("test_new" files for the H/He fraction, "test_fh2o" files for the H2O mass fraction using the Zeng et al. (2019) models and "test_irrow" files for the Aguichine et al. (2021) models).
+* The output files (pickle file recording the fit parameters, MCMC chains, csv file containing median and percentile values, corner plots) which are produced when running the example scripts as is are already in smint/example/smint_results ("test_new" files for the H/He fraction, "test_fh2o" files for the H2O mass fraction using the Zeng et al. (2016) models and "test_irrow" files for the Aguichine et al. (2021) models).
 
 #### Post-processing
 
@@ -68,7 +68,7 @@ Because of thermal evolution, the predicted radii for a planet of the same mass,
 
 #### Mass-radius curves for irradiated ocean worlds
 
-When fitting for the water mass fraction of a close-in planet, I advise for using the Aguichine et al. (2021) models ("irrow" files in *smint*) rather than the Zeng et al. (2019) models. Beyond the additional physics (careful consideration of the state of the water layer), they also have the advantage of providing models for any relative amounts of silicates vs. iron in the core. The parametrization is as follows:
+When fitting for the water mass fraction of a close-in planet, I advise for using the Aguichine et al. (2021) models ("irrow" files in *smint*) rather than the Zeng et al. (2016) models. Beyond the additional physics (careful consideration of the state of the water layer), they also have the advantage of providing models for any relative amounts of silicates vs. iron in the core. The parametrization is as follows:
 * f'core tracks the amount of iron in the core (in mass fraction)
 * fh2o tracks the mass fraction of water for the bulk planet
 For instance, if f'core=0.5 and fh2o=0.33, the planet is composed of 1/3 by mass water, 1/3 by mass iron, 1/3 by mass silicates (iron and silicates being in equal amounts in the core).
