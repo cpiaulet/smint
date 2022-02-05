@@ -202,7 +202,7 @@ def run_fit(params, interpolator, met=1.):
                                           params["age_max"], params["log_fenv_prior"]))
     
     print("\nRunning the emcee fit...")
-    sampler.run_mcmc(params["pos0"], params["nsteps"])
+    sampler.run_mcmc(params["pos0"], params["nsteps"], progress=True)
     
     if params["save"]:
         print("\nSaving the results...")
