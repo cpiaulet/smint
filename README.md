@@ -16,7 +16,7 @@ You can install *smint* from GitHub:
     python setup.py install
 
 ### Dependencies
-The dependencies of *smint* are *NumPy*, *scipy*, *emcee*, *corner*, *astropy*, *pickle*, *configparser* and *argparse*.
+The dependencies of *stctm* are *NumPy*, *scipy*, *emcee*, *corner*, *astropy*, *pickle*, *configparser* and *argparse*.
 
 ### Example
 Copy the three folders in smint/example/ wherever in your installation you want to run your code;
