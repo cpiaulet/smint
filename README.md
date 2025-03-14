@@ -1,4 +1,6 @@
-# smint
+<img src="media/smint_logo.png" width="256px"/>
+
+# Welcome to smint!
 *smint* (Structure Model INTerpolator) is a tool to obtain posterior distributions on the core mass fraction (CMF, now also implemented for rocky planets with no atmosphere!) as well as the H/He or H2O mass fraction of a planet based upon interpolation onto the Lopez & Fortney (2014), Zeng (2016) and Aguichine et al. (2021) model grids. 
 
 If you use this code, please cite Caroline Piaulet as well as the paper describing the grid of interest: Lopez & Fortney (2014), Zeng et al. (2016) and/or Aguichine et al. (2021): 
