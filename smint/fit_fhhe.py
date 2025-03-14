@@ -201,7 +201,7 @@ def run_fit(params, interpolator, met=1.):
                                           params["age_max"], params["log_fenv_prior"]))
     
     print("\nRunning the emcee fit...")
-    sampler.run_mcmc(params["pos0"], params["nsteps"])
+    sampler.run_mcmc(params["pos0"], params["nsteps"], progress=True)
     
     if params["save"]:
         print("\nSaving the results...")
@@ -246,7 +246,7 @@ def plot_corner(samples, params, which="met1",
                         plot_datapoints=False, smooth=1.,
                         quantiles=[0.16, 0.5, 0.84], title_kwargs={'fontsize':14},
                         hist_kwargs={"linewidth":3}, rg=None, 
-                        show_titles=[True,False], **kwargs):
+                        show_titles=[True,False], levels=(0.393,0.865,0.989), **kwargs):
     """
     Corner plot for an emcee fit of the envelope mass fraction that matches
     the observed planet and system params
@@ -284,7 +284,7 @@ def plot_corner(samples, params, which="met1",
                             plot_datapoints=plot_datapoints, smooth=smooth,
                             show_titles=show_titles[0], title_kwargs=title_kwargs,
                             color=params["met1_color"], hist_kwargs=hist_kwargs,
-                            range=rg, **kwargs)
+                            range=rg, levels=levels, **kwargs)
         
     return fig
 

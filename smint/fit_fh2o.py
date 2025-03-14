@@ -155,7 +155,7 @@ def calc_constraints(samples, params, more_percentiles=[15.9, 50., 84.1]):
 def plot_corner(samples, params, plot_datapoints=False, smooth=1.,
                         quantiles=[0.16, 0.5, 0.84], title_kwargs={'fontsize':14},
                         hist_kwargs={"linewidth":3}, rg=None, 
-                        show_titles=True, **kwargs):
+                        show_titles=True, levels=(0.393,0.865,0.989), **kwargs):
     """
     Corner plot for an emcee fit of the water mass fraction that matches
     the observed planet params
@@ -172,7 +172,8 @@ def plot_corner(samples, params, plot_datapoints=False, smooth=1.,
                         plot_datapoints=plot_datapoints, smooth=smooth,
                         show_titles=show_titles, quantiles=quantiles,
                         title_kwargs=title_kwargs, color=color,
-                        hist_kwargs=hist_kwargs, range=rg, **kwargs)
+                        hist_kwargs=hist_kwargs, range=rg, 
+                        levels=levels, **kwargs)
     return fig
 
 

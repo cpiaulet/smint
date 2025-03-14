@@ -13,10 +13,7 @@ Example script
 
 # Import modules ---------- 
 import numpy as np
-from smint import fit_fh2o
-# import astropy.io as aio
-from astropy.io import ascii as aioascii
-
+from smint import fit_cmf
 import pickle
 import os
 import configparser
@@ -24,19 +21,19 @@ import argparse
 from copy import deepcopy
 import sys
 
-
 #%% The main code starts here
 
-def main(argv):
+def main(argv): 
+
     '''
     Example:
-	python calc_h2o_planet_and_plots_example.py template_ini_h2o.ini
+ 	python calc_cmf_planet_and_plots_example.py template_ini_cmf.ini
     '''
         
-    if len(argv)>1:
-        iniFile=argv[1]
+    if len(argv) > 1:
+        iniFile = argv[1]
     else:
-        iniFile='template_ini_h2o.ini'
+        iniFile = 'template_ini_cmf.ini'
             
     if not os.path.exists(iniFile):
         raise FileNotFoundError('USER ERROR: iniFile does not exist.')
@@ -50,12 +47,15 @@ def main(argv):
 
     parser = argparse.ArgumentParser(description='Inputs for the code.')
     
-    parser.add_argument('-path_folder_models', help='path to folder containing Lopez & Fortney + Zeng models', default=config.get('paths','path_folder_models'))
+    parser.add_argument('-path_folder_models', help='path to folder containing Aguichine models', default=config.get('paths','path_folder_models'))
     parser.add_argument('-outputdir', help='saving path (OR path to chains if run_fit==False)', default=config.get('paths','outputdir'))
     parser.add_argument('-fname', help='identifier for this fit (used for saving)', default=config.get('paths','fname'))
 
     parser.add_argument('-Mp_earth', help='planet mass (in Mearth)', default=config.getfloat('physical params','Mp_earth'))
     parser.add_argument('-err_Mp_earth', help='planet mass uncertainty (in Mearth)', default=config.getfloat('physical params','err_Mp_earth'))
+    parser.add_argument('-use_KDE_for_Mp_prior', help='bool. if True, use KDE prior on the mass', default=config.getboolean('physical params','use_KDE_for_Mp_prior'))
+    parser.add_argument('-path_file_kde_points', help='path to npy array of points where mass KDE is evaluated (in Mearth)', default=config.get('physical params','path_file_kde_points'))
+    parser.add_argument('-path_file_kde_density', help='path to npy array of KDE evaluated at kde_points', default=config.get('physical params','path_file_kde_density'))
     parser.add_argument('-Rp_earth', help='planet radius (in Rearth)', default=config.getfloat('physical params','Rp_earth'))
     parser.add_argument('-err_Rp_earth', help='planet radius uncertainty (in Rearth)', default=config.getfloat('physical params','err_Rp_earth'))
 
@@ -83,14 +83,9 @@ def main(argv):
     #%% Setting up the fit
     
     print('\nSetting up the fit...')
+    params = fit_cmf.setup_priors(params)
     
-    params["labels"] = [r"$f_{H_2O}$ [%]", r"M$_p$ [M$_\oplus$]"]
-    
-    # set initial walker positions
-    params["pos0"] = [np.array([50., params["Mp_earth"]]) \
-                     + np.array([20., params["err_Mp_earth"]]) \
-                         * np.random.randn(params["ndim"]) for i in range(params["nwalkers"])]
-    
+    params = fit_cmf.ini_fit(params)
     
     if params["save"]:
         # save params dictionary
@@ -102,20 +97,17 @@ def main(argv):
     
     if params["run_fit"]==True and params["postprocess_oldfit"]==False:
         
-        print('\nGenerating the interpolator...')
-        t_rock_h2o = aioascii.read(params["path_folder_models"]+"t_rock_h2o_Zeng2016.csv")
-        interpolator = fit_fh2o.make_interpolator_fh2o(t_rock_h2o)
+        print('\nGenerating interpolators for radius and validity...')
+        interp_r = fit_cmf.make_interpolator_A21(params["path_folder_models"]+"Aguichine2021/withZengRocky/")
+        interp_validity = fit_cmf.make_interpolator_A21(params["path_folder_models"]+"Aguichine2021/",
+                                                          which_quantity="validity")
     
         print('\nRunning the fit...')      
-        sampler = fit_fh2o.run_fit(params, interpolator)
+        sampler = fit_cmf.run_fit(params, interp_r, interp_validity)
         
         print('\nExtracting samples...')
         samples = sampler.chain[:, int(params["frac_burnin"]*params["nsteps"]):, :].reshape((-1, params["ndim"]))
     
-    #%% Save and print median +/- sigma
-    if params["run_fit"]==True and params["postprocess_oldfit"]==False:
-        print("\nCalculating parameter constraints...")
-        fit_fh2o.calc_constraints(samples, params)
     
     #%% If loading from an old fit
     
@@ -123,13 +115,15 @@ def main(argv):
         print('\nLoading chains from previous fit...')
         samples = np.load(params["outputdir"]+params["fname"]+'_chains.npy')
         samples = samples[:, int(params["frac_burnin"]*samples.shape[1]):, :].reshape((-1, params["ndim"]))
-    
+
+        
     #%% corner plot for each 
     if params["plot_corner"]:
         print('\nGenerating corner plot...')
-        fig = fit_fh2o.plot_corner(samples, params)
+        fig = fit_cmf.plot_corner(samples, params)
         fig.savefig(params['outputdir']+params["fname"]+'_corner.png')
 
 #%%
+
 if __name__ == "__main__":
     main(sys.argv)

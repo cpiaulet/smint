@@ -36,8 +36,7 @@ def main(argv):
         iniFile = 'template_ini_irrow.ini'
             
     if not os.path.exists(iniFile):
-        print('USER ERROR: iniFile does not exist.')
-        raise 
+        raise FileNotFoundError('USER ERROR: iniFile does not exist.')
     config = configparser.ConfigParser()
     config.read(iniFile)
 
