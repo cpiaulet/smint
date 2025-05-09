@@ -225,7 +225,7 @@ def ini_fit(params, grid_lim=None):
         
         params["labels"] = [r"$\chi_\mathrm{core}$", r"f$_\mathrm{H_2O}$", r"T$_\mathrm{irr}$ [K]", r"M$_p$ [M$_\oplus$]"]
 
-    if params["free_FeMg_prior"]:
+    elif params["free_FeMg_prior"]:
         x0 = np.array([0.0, 0.2, params["Tirr"], params["Mp_earth"]])
         
         params["labels"] = [r"$[Fe/Mg]/[Fe/Mg]_\odot$", r"f$_\mathrm{H_2O}$", r"T$_\mathrm{irr}$ [K]", r"M$_p$ [M$_\oplus$]"]
