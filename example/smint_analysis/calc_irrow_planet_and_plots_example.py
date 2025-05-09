@@ -62,6 +62,11 @@ def main(argv):
     parser.add_argument('-err_Tirr', help='planet irradiation T uncertainty (in K)', default=config.getfloat('physical params','err_Tirr'))
 
     parser.add_argument('-Tirr_min', help='lower bound of Tirr prior (in K)', default=config.getfloat('MCMC params','Tirr_min'))
+    parser.add_argument('-mod_xcore_prior', help='bool. if True, uses modified prior on xcore', default=config.getboolean('MCMC params','mod_xcore_prior'))
+    parser.add_argument('-free_FeMg_prior', help='bool. if True, uses free prior on [Fe/Mg]/[Fe/Mg]_sun', default=config.getboolean('MCMC params','mod_xcore_prior'))
+    parser.add_argument('-fcore_gaussian', help='bool. if True, uses Gaussian prior on xcore', default=config.getboolean('MCMC params','fcore_gaussian'))
+    parser.add_argument('-fcore_mean', help='mean of gaussian prior on xcore', default=config.getfloat('MCMC params','fcore_mean'))
+    parser.add_argument('-fcore_std', help='standard deviation of gaussian prior on xcore', default=config.getfloat('MCMC params','fcore_std'))
     parser.add_argument('-nsteps', help='number of MCMC steps', default=config.getint('MCMC params','nsteps'))
     parser.add_argument('-ndim', help='number of fitted params', default=config.getint('MCMC params','ndim'))
     parser.add_argument('-nwalkers', help='number of MCMC walkers', default=config.getint('MCMC params','nwalkers'))
