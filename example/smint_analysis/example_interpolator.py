@@ -29,7 +29,7 @@ R_array = np.load(path_folder_models + 'LF14_20201014.npy')
 interp_hhe = fit_fhhe.make_interpolator_LF14(t, R_array, log_fenv_prior=False)
 
 # met in * solar, age in Gyr, finc in units of the solar constant, log_10 mass [Mearth], envelope mass fraction in %
-r_interp_hhe = fit_fhhe.find_radius_LF14_table(interp=interp_hhe, met=1., age=2., log10_finc=2.5, log10_mass=0.2, fenv=12.)
+r_interp_hhe = fit_fhhe.find_radius_fenv(interp=interp_hhe, met=1., age=2., log10_finc=2.5, log10_mass=0.2, fenv=12.)
 print(r_interp_hhe, 'Earth radii')
 
 #%% Using H2O mass fraction
