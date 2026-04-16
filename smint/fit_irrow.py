@@ -15,6 +15,7 @@ import numpy as np
 from scipy.interpolate import RegularGridInterpolator
 import emcee
 import corner
+import matplotlib.pyplot as plt
 
 #%% utilities for interpolation
 
@@ -241,6 +242,9 @@ def plot_corner(samples, params, plot_datapoints=False, smooth=1.,
     """
     hist_kwargs["color"] = params["hist_color"]
     color = params["hist_color"]
+    lp_array = np.array([lnprior(sample, params) for sample in samples])
+    good_indices = np.where(np.isfinite(lp_array))[0]
+    samples = samples[good_indices]
     fig = corner.corner(samples, labels=params["labels"], 
                         plot_datapoints=plot_datapoints, smooth=smooth,
                         show_titles=show_titles, quantiles=quantiles,
@@ -250,3 +254,80 @@ def plot_corner(samples, params, plot_datapoints=False, smooth=1.,
     return fig
 
 
+def plot_mass_radius(samples, params, interp_r, interp_validity):
+
+    #%% mass radius curve
+    masses_to_calc = np.logspace(np.log10(0.4), np.log10(20), 1000)
+    one = np.ones_like(masses_to_calc)
+
+    import matplotlib.pyplot as plt
+
+    #params #samples
+    input = np.median(samples, axis=0)
+
+    if input[2] < 400.:
+        input[2] = 400.
+        print("Median irradiation temperature was less than 400 K, using 400 K for plotting")
+
+    # fcore_in_interior, Tirr, fh2o, log10_Mass_oplus (interp)
+    # parameters are: fraction of core in (core+mantle) by mass; irradiation T, water mass fraction (0.1 is 10%), log10 mass in Earth masses
+    param_best = np.array([one * input[0], one * input[2], one * input[1], np.log10(masses_to_calc)]).T
+    radii_best = interp_r((param_best), method="linear")
+    validity_best = interp_validity((param_best), method="linear")
+    ind_valid_best = np.where(validity_best < 0.5)[0]
+
+    wmf_low = np.floor(input[1] * 10) / 10
+    wmf_high = np.ceil(input[1] * 10) / 10
+
+    param_roundlow = np.array([one * input[0], one * input[2], one * wmf_low, np.log10(masses_to_calc)]).T
+    radii_roundlow = interp_r((param_roundlow), method="linear")
+    validity_roundlow = interp_validity((param_roundlow), method="linear")
+    ind_valid_roundlow = np.where(validity_roundlow < 0.5)[0]
+
+    param_roundhigh = np.array([one * input[0], one * input[2], one * wmf_high, np.log10(masses_to_calc)]).T
+    radii_roundhigh = interp_r((param_roundhigh), method="linear")
+    validity_roundhigh = interp_validity((param_roundhigh), method="linear")
+    ind_valid_roundhigh = np.where(validity_roundhigh < 0.5)[0]
+
+    fig, ax = plt.subplots(1, 1)
+    ax.plot(masses_to_calc[ind_valid_best], radii_best[ind_valid_best], label="Best Fit - WMF = " + str(round(input[1]*100, 0)) + "%", color="C0", linestyle='dashed')
+    ax.plot(masses_to_calc[ind_valid_roundlow], radii_roundlow[ind_valid_roundlow], label="WMF = " + str(wmf_low*100) + "%", color="C2")
+    ax.plot(masses_to_calc[ind_valid_roundhigh], radii_roundhigh[ind_valid_roundhigh], label="WMF = " + str(wmf_high*100) + "%", color="C9")
+
+    # mass and radius values from Cadieux+ 2025
+    ax.errorbar(params["Mp_earth"], params["Rp_earth"], params["err_Rp_earth"], params["err_Mp_earth"], marker="*", color="white", ecolor="black", markeredgecolor="black", capsize=2, markersize=10, ls="")
+
+    #x axis limits
+    x_min = max(1, params["Mp_earth"] - 5 * params["err_Mp_earth"])
+    x_max = params["Mp_earth"] + 5 * params["err_Mp_earth"]
+
+    if x_min > 1.0:
+        x_min = 1.0
+    if x_max < 3.0:
+        x_max = 3.0
+
+    #x ticks
+    ax.set_xscale("log")
+    positions = np.arange(int(np.floor(x_min)), int(np.ceil(x_max)) + 1)
+    ax.set_xticks(positions, labels = [str(int(p)) for p in positions])
+    ax.spines['top'].set_linewidth(2)
+    ax.spines['bottom'].set_linewidth(2)
+    ax.spines['left'].set_linewidth(2)
+    ax.spines['right'].set_linewidth(2)
+
+    #setting other labels
+    ax.set_xlabel(r"Mass [M$_\oplus$]")
+    ax.set_ylabel(r"Radius [R$_\oplus$]")
+    ax.set_xlim(x_min, x_max)
+    ax.legend(loc=2)
+    ax.text(0.95, 0.95, params["fname"],
+            transform=ax.transAxes,
+            verticalalignment='top',
+            horizontalalignment='right',
+            bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
+    # parameters are: fraction of core in (core+mantle) by mass; irradiation T, water mass fraction (0.1 is 10%), log10 mass in Earth masses
+    #param_h2o_10percent = np.array([one * 0.325, one * 400., one * 0.1, np.log10(masses_to_calc)]).T
+
+    fig.savefig(params["path_folder_models"]  + "../smint_results/" + params["fname"] + "_mass_radius_best.png")
+
+    return fig
