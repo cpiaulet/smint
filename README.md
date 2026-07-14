@@ -1,9 +1,9 @@
 <img src="media/smint_logo.png" width="256px"/>
 
 # Welcome to smint!
-*smint* (Structure Model INTerpolator) is a tool to obtain posterior distributions on the core mass fraction (CMF, now also implemented for rocky planets with no atmosphere!) as well as the H/He or H2O mass fraction of a planet based upon interpolation onto the Lopez & Fortney (2014), Zeng (2016) and Aguichine et al. (2021) model grids. 
+*smint* (Structure Model INTerpolator) is a tool to obtain posterior distributions on the core mass fraction (CMF, now also implemented for rocky planets with no atmosphere!) as well as the H/He or H2O mass fraction of a planet based upon interpolation onto the Lopez & Fortney (2014), Zeng (2016) Aguichine et al. (2021) and Aguichine et al. (2025) model grids. 
 
-If you use this code, please cite Caroline Piaulet as well as the paper describing the grid of interest: Lopez & Fortney (2014), Zeng et al. (2016) and/or Aguichine et al. (2021): 
+If you use this code, please cite Caroline Piaulet as well as the paper describing the grid of interest: Lopez & Fortney (2014), Zeng et al. (2016), Aguichine et al. (2021) and/or Aguichine et al. (2025): 
 * https://ui.adsabs.harvard.edu/abs/2021AJ....161...70P/abstract (first paper describing the code) 
 * https://ui.adsabs.harvard.edu/abs/2014ApJ...792....1L/abstract
 * https://ui.adsabs.harvard.edu/abs/2016ApJ...819..127Z/abstract
@@ -17,7 +17,6 @@ You can install *smint* from GitHub:
 
     git clone https://github.com/cpiaulet/smint.git
     cd smint
-    python setup.py install
 
 ### Dependencies
 The dependencies of *stctm* are *NumPy*, *scipy*, *emcee*, *corner*, *astropy*, *pickle*, *configparser* and *argparse*.
@@ -32,7 +31,7 @@ If instead you want to compute the distributions of iron-rich core mass fraction
 
 
 #### MCMC fits
-The example scripts in smint_analysis/ (```calc_X_planet_and_plots_example.py```) illustrate respectively how to compute the distribution of H/He (```X=fhhe```) or water mass fractions from the Zeng et al. 2016 water models (```X=fh2o```), the Aguichine et al. 2021 irradiated ocean worlds models (```X=irrow```), or the CMF of a planet with no envelope (```X=cmf```) given basic planet parameters. Parameters of the planet, star, MCMC fits and plots can be modified from the default values using a config file, examples of which are provided for each type of fit as ```template_ini_X.ini```. 
+The example scripts in smint_analysis/ (```calc_X_planet_and_plots_example.py```) illustrate respectively how to compute the distribution of H/He (```X=fhhe```) or water mass fractions from the Zeng et al. 2016 water models (```X=fh2o```), the Aguichine et al. 2021 irradiated ocean worlds models (```X=irrow```) and the Aguichine et al. 2025 irradiated ocean worlds evolution models (```X=irrowev```), or the CMF of a planet with no envelope (```X=cmf```) given basic planet parameters. Parameters of the planet, star, MCMC fits and plots can be modified from the default values using a config file, examples of which are provided for each type of fit as ```template_ini_X.ini```. 
 
 Here is an example one-liner to run a fit of the H/He mass fraction of a planet using planet parameters in the template_ini_hhe.ini config file:
 
@@ -79,6 +78,6 @@ For instance, if f'core=0.5 and fh2o=0.33, the planet is composed of 1/3 by mass
 
 A few noteworthy details about the implementation:
 * The radii are calculated, for a given composition, mass and irradiation temperature, using scaling relations. However, the code will check the bank of actual model calculations for whether or not a given set of input parameters yielded a physical model. If not, the returned probability will be zero.
-* The models only go down to irradiation temperatures of 400 K. Therefore, I recommend using 400 K (as is the default) as the lower bound on the prior on the irradiation temperature. However, if you wish to run a fit for a planet that has a lower irradiation temperature, you can lower this bound using the ```Tirr_min``` parameter in the .ini file. In practice, for Tirr below 400 K, radii will be computed as if Tirr=400 K.
+* The models only go down to irradiation temperatures and equilibrium temperatures of 400 K. Therefore, I recommend using 400 K (as is the default) as the lower bound on the prior on the irradiation temperature / equilibrium temperature. However, if you wish to run a fit for a planet that has a lower irradiation temperature / equilibrium temperature, you can lower this bound using the ```Tirr_min``` parameter or ```Teq_min``` in the .ini file. In practice, for Tirr / Teq below 400 K, radii will be computed as if Tirr=400 K / Teq=400K.
 * The Aguichine et al. (2021) models go down to 10% water by mass. To extend the prior range to 0% water, predicted radii are interpolated with the pure rock/iron mass-radius relations from Zeng (http://www.astrozeng.com/).
 

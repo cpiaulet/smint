@@ -34,7 +34,7 @@ def find_radius_from_comp(path_models=None, interp_r=None, fcore_in_interior=1.,
 
 def make_interpolator_A21(path_models, which_quantity="r"):
     """
-    make an interpolator for quantity which_quantity as a function of 
+    make an interpol ator for quantity which_quantity as a function of
     ['fcore_in_interior','Tirr', 'fh2o','Mass_oplus']
     using the Aguichine et al. 2021 grid
     the interpolation is linear with the log10 of the planet mass
@@ -260,9 +260,7 @@ def plot_mass_radius(samples, params, interp_r, interp_validity):
     masses_to_calc = np.logspace(np.log10(0.4), np.log10(20), 1000)
     one = np.ones_like(masses_to_calc)
 
-    import matplotlib.pyplot as plt
-
-    #params #samples
+    #params #samples #fcore_in_interior, fh2o, Tirr, mass (theta)
     input = np.median(samples, axis=0)
 
     if input[2] < 400.:
@@ -325,7 +323,7 @@ def plot_mass_radius(samples, params, interp_r, interp_validity):
             verticalalignment='top',
             horizontalalignment='right',
             bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
-    # parameters are: fraction of core in (core+mantle) by mass; irradiation T, water mass fraction (0.1 is 10%), log10 mass in Earth masses
+
     #param_h2o_10percent = np.array([one * 0.325, one * 400., one * 0.1, np.log10(masses_to_calc)]).T
 
     fig.savefig(params["path_folder_models"]  + "../smint_results/" + params["fname"] + "_mass_radius_best.png")
