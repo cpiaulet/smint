@@ -27,11 +27,17 @@ Copy the three folders in ```smint/example/``` wherever in your installation you
 #### Standalone interpolator
 You can run ```smint_analysis/example_interpolator.py``` in order to get familiar with the interpolation tool.
 
-If instead you want to compute the distributions of iron-rich core mass fraction, water or H/He mass fractions given some planet and system parameters, you can use as reference one of the four other example scripts. 
+If instead you want to compute the distributions of iron-rich core mass fraction, water or H/He mass fractions given some planet and system parameters, you can use as reference one of the five other example scripts. 
 
 
 #### MCMC fits
-The example scripts in smint_analysis/ (```calc_X_planet_and_plots_example.py```) illustrate respectively how to compute the distribution of H/He (```X=fhhe```) or water mass fractions from the Zeng et al. 2016 water models (```X=fh2o```), the Aguichine et al. 2021 irradiated ocean worlds models (```X=irrow```) and the Aguichine et al. 2025 irradiated ocean worlds evolution models (```X=irrowev```), or the CMF of a planet with no envelope (```X=cmf```) given basic planet parameters. Parameters of the planet, star, MCMC fits and plots can be modified from the default values using a config file, examples of which are provided for each type of fit as ```template_ini_X.ini```. 
+The example scripts in smint_analysis/ (```calc_X_planet_and_plots_example.py```) illustrate respectively how to compute the distribution of:
+* H/He (```X=fhhe```) 
+* Water mass fractions from the Zeng et al. 2016 water models (```X=fh2o```)
+* The Aguichine et al. 2021 irradiated ocean worlds models (```X=irrow```) 
+* The Aguichine et al. 2025 irradiated ocean worlds evolution models (```X=irrowev```)
+* The CMF of a planet with no envelope (```X=cmf```) given basic planet parameters. 
+Parameters of the planet, star, MCMC fits and plots can be modified from the default values using a config file, examples of which are provided for each type of fit as ```template_ini_X.ini```. 
 
 Here is an example one-liner to run a fit of the H/He mass fraction of a planet using planet parameters in the template_ini_hhe.ini config file:
 

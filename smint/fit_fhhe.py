@@ -305,12 +305,36 @@ def plot_mass_radius(samples_met1, samples_met50, params, interpolator):
     param_best_met1 = np.array([one * 1, one * input_met1[2], one * np.log10(input_met1[3]), np.log10(masses_to_calc), one * input_met1[0]]).T
     radii_best_met1 = interpolator(param_best_met1, method="linear")
 
+    met1_low = np.floor(input_met1[0] / 10) * 10
+    met1_high = np.ceil(input_met1[0] / 10) * 10
+
+    param_met1_roundlow = np.array([one * 1, one * input_met1[2], one * np.log10(input_met1[3]), np.log10(masses_to_calc), one * met1_low]).T
+    radii_met1_roundlow = interpolator((param_met1_roundlow), method="linear")
+
+    param_met1_roundhigh = np.array([one * 1, one * input_met1[2], one * np.log10(input_met1[3]), np.log10(masses_to_calc), one * met1_high]).T
+    radii_met1_roundhigh = interpolator((param_met1_roundhigh), method="linear")
+
+
+
     param_best_met50 = np.array([one * 50, one * input_met50[2], one * np.log10(input_met50[3]), np.log10(masses_to_calc), one * input_met50[0]]).T
     radii_best_met50 = interpolator(param_best_met50, method="linear")
+    met50_low = np.floor(input_met50[0] / 10) * 10
+    met50_high = np.ceil(input_met50[0] / 10) * 10
+
+    param_met50_roundlow = np.array([one * 50, one * input_met50[2], one * np.log10(input_met50[3]), np.log10(masses_to_calc), one * met50_low]).T
+    radii_met50_roundlow = interpolator((param_met1_roundlow), method="linear")
+
+    param_met50_roundhigh = np.array([one * 50, one * input_met50[2], one * np.log10(input_met50[3]), np.log10(masses_to_calc), one * met50_high]).T
+    radii_met50_roundhigh = interpolator((param_met50_roundhigh), method="linear")
 
     fig, ax = plt.subplots(1, 1)
-    ax.plot(masses_to_calc, radii_best_met1, label="Best Fit (1x Solar) - fenv = " + str(round(input_met1[0], 2)) + "%", color="C7")
-    ax.plot(masses_to_calc, radii_best_met50, label="Best Fit (50x Solar) - fenv = " + str(round(input_met50[0], 2)) + "%", color="C9")
+    ax.plot(masses_to_calc, radii_best_met1, label="Best Fit (1x Solar) - fenv = " + str(round(input_met1[0], 2)) + "%", color="C0")
+    ax.plot(masses_to_calc, radii_met1_roundlow, label="fenv = " + str(met1_low) + "%", color="C2")
+    ax.plot(masses_to_calc, radii_met1_roundhigh, label="fenv = " + str(met1_high) + "%", color="C9")
+
+    ax.plot(masses_to_calc, radii_best_met50, label="Best Fit (50x Solar) - fenv = " + str(round(input_met50[0], 2)) + "%", color="C3")
+    ax.plot(masses_to_calc, radii_met50_roundlow, label="fenv = " + str(met50_low) + "%", color="C1")
+    ax.plot(masses_to_calc, radii_met50_roundhigh, label="fenv = " + str(met50_high) + "%", color="C6")
 
     ax.errorbar(params["Mp_earth"], params["Rp_earth"], params["err_Rp_earth"], params["err_Mp_earth"], marker="*", color="white", ecolor="black", markeredgecolor="black", capsize=2, markersize=10, ls="")
 
