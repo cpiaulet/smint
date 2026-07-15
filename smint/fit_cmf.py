@@ -189,6 +189,12 @@ def ini_fit(params, grid_lim=None):
     if None, uses the bounds from the Aguichine et al. (2021) grid
     output: initial positions of the walkers and labels for the fitted para
     """
+    from datetime import datetime  # Get current date and time
+    now = datetime.now()  # Format as YYYYMMDD_HHhMMmSSs
+    Datestr = now.strftime("%Y%m%d_%Hh%Mm%Ss")
+    print(Datestr)  # Output: 20260715_170942s (based on current time)
+    params["outputdir_fullpath"] = params["outputdir"] + "/" + params["fname"] + "_" + Datestr
+    os.makedirs(params["outputdir_fullpath"], exist_ok=True)
 
     x0 = np.array([0.33, params["Mp_earth"]])
     
@@ -226,7 +232,7 @@ def run_fit(params, interp_r, interp_validity):
     
     if params["save"]:
         print("\nSaving the results...")
-        np.save(params["outputdir"]+params["fname"]+'_chains.npy', sampler.chain)
+        np.save(params["outputdir_fullpath"] + "/" +params["fname"]+'_chains.npy', sampler.chain)
     
     return sampler
 

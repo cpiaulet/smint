@@ -118,7 +118,7 @@ def run_fit(params, interpolator):
     
     if params["save"]:
         print("\nSaving the results...")
-        np.save(params["outputdir"]+params["fname"]+'_chains.npy', sampler.chain)
+        np.save(params["outputdir_fullpath"] + "/" +params["fname"]+'_chains.npy', sampler.chain)
     
     return sampler
 
@@ -152,7 +152,7 @@ def calc_constraints(samples, params, more_percentiles=[15.9, 50., 84.1]):
     print(t)
 
     if params["save"]:
-        aioascii.write(t, params["outputdir"]+params["fname"]+'_constraints.csv', overwrite=True)
+        aioascii.write(t, params["outputdir_fullpath"] + "/" +params["fname"]+'_constraints.csv', overwrite=True)
     return t
 
 def plot_corner(samples, params, plot_datapoints=False, smooth=1.,
@@ -235,6 +235,6 @@ def plot_mass_radius(samples, params, interpolator):
             horizontalalignment='right',
             bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
 
-    fig.savefig(params["path_folder_models"]  + "../smint_results/" + params["fname"] + "_mass_radius_best.png")
+    fig.savefig(params["outputdir_fullpath"] + "/" + params["fname"] + "_mass_radius_best.png")
 
     return fig

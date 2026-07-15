@@ -183,6 +183,13 @@ def ini_fit(params, grid_lim=None):
     output: initial positions of the walkers and labels for the fitted para
     """
 
+    from datetime import datetime  # Get current date and time
+    now = datetime.now()  # Format as YYYYMMDD_HHhMMmSSs
+    Datestr = now.strftime("%Y%m%d_%Hh%Mm%Ss")
+    print(Datestr)  # Output: 20260715_170942s (based on current time)
+    params["outputdir_fullpath"] = params["outputdir"] + "/" + params["fname"] + "_" + Datestr
+    os.makedirs(params["outputdir_fullpath"], exist_ok=True)
+
     x0 = np.array([0.33, 0.2, params["Tirr"], params["Mp_earth"]])
     
     params["labels"] = [r"f$_\mathrm{core}'$", r"f$_\mathrm{H_2O}$", r"T$_\mathrm{irr}$ [K]", r"M$_p$ [M$_\oplus$]"]
@@ -219,7 +226,7 @@ def run_fit(params, interp_r, interp_validity):
     
     if params["save"]:
         print("\nSaving the results...")
-        np.save(params["outputdir"]+params["fname"]+'_chains.npy', sampler.chain)
+        np.save(params["outputdir_fullpath"] + "/" +params["fname"]+'_chains.npy', sampler.chain)
     
     return sampler
 
@@ -326,6 +333,6 @@ def plot_mass_radius(samples, params, interp_r, interp_validity):
 
     #param_h2o_10percent = np.array([one * 0.325, one * 400., one * 0.1, np.log10(masses_to_calc)]).T
 
-    fig.savefig(params["path_folder_models"]  + "../smint_results/" + params["fname"] + "_mass_radius_best.png")
+    fig.savefig(params["outputdir_fullpath"] + "/" + params["fname"] + "_mass_radius_best.png")
 
     return fig

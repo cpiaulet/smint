@@ -5,6 +5,7 @@ import emcee
 import corner
 import matplotlib.pyplot as plt
 from astropy.io import ascii
+import os
 
 
 # %% utilities for interpolation
@@ -46,8 +47,6 @@ def make_interpolator_A25(path_to_models, which_table="M", which_quantity="R_20m
     unique_age = np.unique(physical_table['Age'])
 
     y_reshape = y.reshape((np.size(unique_wmf), np.size(unique_teq), np.size(unique_mp), np.size(unique_age))).T
-    print(np.shape(y_reshape))
-    print(y_reshape[:, 0, 0, 0])
 
     interpolator = RegularGridInterpolator((unique_age, unique_mp, unique_teq, unique_wmf,), y_reshape,
                                            bounds_error=False)
@@ -202,6 +201,13 @@ def ini_fit(params, grid_lim=None):
     if None, uses the bounds from the Aguichine et al. (2025) grid
     output: initial positions of the walkers and labels for the fitted para
     """
+    from datetime import datetime  # Get current date and time
+    now = datetime.now()  # Format as YYYYMMDD_HHhMMmSSs
+    Datestr = now.strftime("%Y%m%d_%Hh%Mm%Ss")
+    print(Datestr)  # Output: 20260715_170942s (based on current time)
+    params["outputdir_fullpath"] = params["outputdir"] + "/" + params["fname"] + "_" + Datestr
+    os.makedirs(params["outputdir_fullpath"], exist_ok=True)
+
     flat_age = params["flat_age"]
     params["ndim"] = 4
 
@@ -247,7 +253,7 @@ def run_fit(params, interp_r):
 
     if params["save"]:
         print("\nSaving the results...")
-        np.save(params["outputdir"] + params["fname"] + '_chains.npy', sampler.chain)
+        np.save(params["outputdir_fullpath"] + "/" + params["fname"] + '_chains.npy', sampler.chain)
 
     return sampler
 
@@ -349,7 +355,7 @@ def plot_mass_radius(samples, params, interp_r):
     bbox = dict(boxstyle='round', facecolor='white', alpha=0.5))
 
 
-    fig.savefig(params["path_folder_models"] + "../smint_results/" + params["fname"] + "_mass_radius_best.png")
+    fig.savefig(params["outputdir_fullpath"] + "/" + params["fname"] + "_mass_radius_best.png")
 
 
     return fig

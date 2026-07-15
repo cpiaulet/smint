@@ -156,6 +156,12 @@ def ini_fit(params, grid_lim=None):
     if None, uses the bounds from the Lopez & Fortney (2014) grid
     output: initial positions of the walkers and labels for the fitted para
     """
+    from datetime import datetime  # Get current date and time
+    now = datetime.now()  # Format as YYYYMMDD_HHhMMmSSs
+    Datestr = now.strftime("%Y%m%d_%Hh%Mm%Ss")
+    print(Datestr)  # Output: 20260715_170942s (based on current time)
+    params["outputdir_fullpath"] = params["outputdir"] + "/" + params["fname"] + "_" + Datestr
+    os.makedirs(params["outputdir_fullpath"], exist_ok=True)
 
     if params["log_fenv_prior"]:
         fenv_ini = 0.
@@ -206,7 +212,7 @@ def run_fit(params, interpolator, met=1.):
     
     if params["save"]:
         print("\nSaving the results...")
-        np.save(params["outputdir"]+params["fname"]+'_chains_met'+str(int(met))+'.npy', sampler.chain)
+        np.save(params["outputdir_fullpath"] + "/" +params["fname"]+'_chains_met'+str(int(met))+'.npy', sampler.chain)
     
     return sampler
 
@@ -240,7 +246,7 @@ def calc_constraints(samples, params, more_percentiles=[15.9, 50., 84.1], suffix
     print(t)
 
     if params["save"]:
-        aioascii.write(t, params["outputdir"]+params["fname"]+suffix+'_constraints.csv', overwrite=True)
+        aioascii.write(t, params["outputdir_fullpath"] + "/" +params["fname"]+suffix+'_constraints.csv', overwrite=True)
     return t
  
 def plot_corner(samples, params, which="met1", 
@@ -362,7 +368,7 @@ def plot_mass_radius(samples_met1, samples_met50, params, interpolator):
             horizontalalignment='right',
             bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
 
-    fig.savefig(params["path_folder_models"]  + "../smint_results/" + params["fname"] + "_mass_radius_best.png")
+    fig.savefig(params["outputdir_fullpath"] + "/" + params["fname"] + "_mass_radius_best.png")
 
     return fig
 

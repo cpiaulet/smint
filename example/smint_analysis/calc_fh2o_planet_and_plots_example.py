@@ -83,6 +83,13 @@ def main(argv):
     #%% Setting up the fit
     
     print('\nSetting up the fit...')
+
+    from datetime import datetime  # Get current date and time
+    now = datetime.now()  # Format as YYYYMMDD_HHhMMmSSs
+    Datestr = now.strftime("%Y%m%d_%Hh%Mm%Ss")
+    print(Datestr)  # Output: 20260715_170942s (based on current time)
+    params["outputdir_fullpath"] = params["outputdir"] + "/" + params["fname"] + "_" + Datestr
+    os.makedirs(params["outputdir_fullpath"], exist_ok=True)
     
     params["labels"] = [r"$f_{H_2O}$ [%]", r"M$_p$ [M$_\oplus$]"]
     
@@ -90,11 +97,16 @@ def main(argv):
     params["pos0"] = [np.array([50., params["Mp_earth"]]) \
                      + np.array([20., params["err_Mp_earth"]]) \
                          * np.random.randn(params["ndim"]) for i in range(params["nwalkers"])]
-    
+
+    import shutil
+    current_file_path = os.path.abspath(__file__)
+    file_name = os.path.basename(current_file_path)
+    shutil.copy2(current_file_path, params["outputdir_fullpath"])
+    shutil.copy2(iniFile, params["outputdir_fullpath"])
     
     if params["save"]:
         # save params dictionary
-        f = open(params["outputdir"]+params["fname"]+"_params"+".pkl","wb")
+        f = open(params["outputdir_fullpath"] + "/" +params["fname"]+"_params"+".pkl","wb")
         pickle.dump(params, f)
         f.close()
     
@@ -121,14 +133,14 @@ def main(argv):
     
     if params["postprocess_oldfit"]:
         print('\nLoading chains from previous fit...')
-        samples = np.load(params["outputdir"]+params["fname"]+'_chains.npy')
+        samples = np.load(params["outputdir_fullpath"] + "/" +params["fname"]+'_chains.npy')
         samples = samples[:, int(params["frac_burnin"]*samples.shape[1]):, :].reshape((-1, params["ndim"]))
     
     #%% corner plot for each 
     if params["plot_corner"]:
         print('\nGenerating corner plot...')
         fig = fit_fh2o.plot_corner(samples, params)
-        fig.savefig(params['outputdir']+params["fname"]+'_corner.png')
+        fig.savefig(params["outputdir_fullpath"] + "/" +params["fname"]+'_corner.png')
 
 #%%
 if __name__ == "__main__":

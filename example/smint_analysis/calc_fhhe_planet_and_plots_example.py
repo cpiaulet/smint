@@ -96,10 +96,16 @@ def main(argv):
     params = fit_fhhe.setup_priors(params)
     
     params = fit_fhhe.ini_fit(params)
+
+    import shutil
+    current_file_path = os.path.abspath(__file__)
+    file_name = os.path.basename(current_file_path)
+    shutil.copy2(current_file_path, params["outputdir_fullpath"])
+    shutil.copy2(iniFile, params["outputdir_fullpath"])
     
     if params["save"]:
         # save params dictionary
-        f = open(params["outputdir"]+params["fname"]+"_params"+".pkl","wb")
+        f = open(params["outputdir_fullpath"] + "/" +params["fname"]+"_params"+".pkl","wb")
         pickle.dump(params, f)
         f.close()
     
@@ -138,8 +144,8 @@ def main(argv):
     #%% If loading from an old fit
     if params["postprocess_oldfit"]:
         print('\nLoading chains from previous fit...')
-        samples_met1 = np.load(params["outputdir"]+params["fname"]+'_chains_met1.npy')
-        samples_met50 = np.load(params["outputdir"]+params["fname"]+'_chains_met50.npy')
+        samples_met1 = np.load(params["outputdir_fullpath"] + "/" +params["fname"]+'_chains_met1.npy')
+        samples_met50 = np.load(params["outputdir_fullpath"] + "/" +params["fname"]+'_chains_met50.npy')
         samples_met1 = samples_met1[:, int(params["frac_burnin"]*samples_met1.shape[1]):, :].reshape((-1, params["ndim"]))
         samples_met50 = samples_met50[:, int(params["frac_burnin"]*samples_met50.shape[1]):, :].reshape((-1, params["ndim"]))
     
@@ -149,13 +155,13 @@ def main(argv):
         print('\nPlotting individual corner plots...')
         fig_met1 = fit_fhhe.plot_corner(samples_met1, params, which="met1")
         fig_met50 = fit_fhhe.plot_corner(samples_met50, params, which="met50")
-        fig_met1.savefig(params['outputdir']+params["fname"]+'_corner_met1.png')
-        fig_met50.savefig(params['outputdir']+params["fname"]+'_corner_met50.png')
+        fig_met1.savefig(params["outputdir_fullpath"] + "/" +params["fname"]+'_corner_met1.png')
+        fig_met50.savefig(params["outputdir_fullpath"] + "/" +params["fname"]+'_corner_met50.png')
     
     if params["corner_both"]:
         print('\nPlotting corner plot with both metallicities...')
         fig_both = fit_fhhe.plot_corner([samples_met1,samples_met50], params, which="both", rg=rg)
-        fig_both.savefig(params['outputdir']+params["fname"]+'_corner_both.png')
+        fig_both.savefig(params["outputdir_fullpath"] + "/" +params["fname"]+'_corner_both.png')
     
 #%%
 
