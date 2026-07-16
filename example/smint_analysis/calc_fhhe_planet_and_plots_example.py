@@ -160,7 +160,7 @@ def main(argv):
     
     if params["corner_both"]:
         print('\nPlotting corner plot with both metallicities...')
-        fig_both = fit_fhhe.plot_corner([samples_met1,samples_met50], params, which="both", rg=rg)
+        fig_both = fit_fhhe.plot_corner([samples_met1,samples_met50], params, which="both", rg=None)
         fig_both.savefig(params["outputdir_fullpath"] + "/" +params["fname"]+'_corner_both.png')
     
 #%%

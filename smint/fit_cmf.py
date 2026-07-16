@@ -15,6 +15,7 @@ import numpy as np
 from scipy.interpolate import RegularGridInterpolator
 import emcee
 import corner
+import os
 
 #%% utilities for interpolation
 

@@ -16,6 +16,7 @@ from scipy.interpolate import RegularGridInterpolator
 import emcee
 import corner
 import matplotlib.pyplot as plt
+import os
 
 #%% utilities for interpolation
 

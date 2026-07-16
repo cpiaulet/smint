@@ -18,6 +18,7 @@ import corner
 from astropy.io import ascii as aioascii
 from astropy import table
 import matplotlib.pyplot as plt
+import os
 
 #%% utilities for interpolation
 
