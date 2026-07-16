@@ -67,6 +67,7 @@ def main(argv):
     
     parser.add_argument('-hist_color', help='color in histograms and corner', default=config.get('plotting','hist_color'))
     parser.add_argument('-plot_corner', help='bool. if True, generate corner plot', default=config.getboolean('plotting','plot_corner'))
+    parser.add_argument('-plot_mass_radius', help='bool. if True, generate mass radius plot', default=config.getboolean('plotting', 'plot_mass_radius'))
 
     args, unknown = parser.parse_known_args()
 
@@ -141,6 +142,13 @@ def main(argv):
         print('\nGenerating corner plot...')
         fig = fit_fh2o.plot_corner(samples, params)
         fig.savefig(params["outputdir_fullpath"] + "/" +params["fname"]+'_corner.png')
+
+    # %% mass radius curve
+    if params["plot_mass_radius"]:
+        print('\nPlotting mass radius curves...')
+        fig = fit_fh2o.plot_mass_radius(samples, params, interpolator)
+        fig.savefig(params["outputdir_fullpath"] + "/" + params["fname"] + "_mass_radius_best.png")
+
 
 #%%
 if __name__ == "__main__":

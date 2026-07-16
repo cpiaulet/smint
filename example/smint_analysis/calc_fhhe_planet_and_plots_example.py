@@ -77,6 +77,7 @@ def main(argv):
     parser.add_argument('-met50_color', help='color in histograms for metallicity = 50*solar', default=config.get('plotting','met50_color'))
     parser.add_argument('-corner_indiv', help='bool. if True, plot individual corner plots for each fit', default=config.getboolean('plotting','corner_indiv'))
     parser.add_argument('-corner_both', help='bool. if True, plot both corner plots superimposed', default=config.getboolean('plotting','corner_both'))
+    parser.add_argument('-plot_mass_radius', help='bool. if True, generate mass radius plot', default=config.getboolean('plotting', 'plot_mass_radius'))
 
     args, unknown = parser.parse_known_args()
 
@@ -162,7 +163,14 @@ def main(argv):
         print('\nPlotting corner plot with both metallicities...')
         fig_both = fit_fhhe.plot_corner([samples_met1,samples_met50], params, which="both", rg=None)
         fig_both.savefig(params["outputdir_fullpath"] + "/" +params["fname"]+'_corner_both.png')
-    
+
+    #%% mass radius curve
+    if params["plot_mass_radius"]:
+        print('\nPlotting mass radius curves...')
+        fig_both = fit_fhhe.plot_mass_radius(samples_met1, samples_met50, params, interpolator)
+        fig_both.savefig(params["outputdir_fullpath"] + "/" + params["fname"] + "_mass_radius_best.png")
+
+
 #%%
 
 if __name__ == "__main__":

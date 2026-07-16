@@ -305,7 +305,6 @@ def plot_mass_radius(samples_met1, samples_met50, params, interpolator):
     #params #samples #find best fit median parameters of _x solar #order of index: fenv, mass, age, finc
     input_met1 = np.median(samples_met1, axis=0)
     input_met50 = np.median(samples_met50, axis=0)
-    print(input_met1)
 
     # parameters are: met in * solar, age in Gyr, log10 finc in units of the solar constant, log_10 mass [Mearth], envelope mass fraction in %
     # metallicity_solar, age_Gyr, log10_F_inc_oplus, log10_Mass_oplus, f_env_pc
