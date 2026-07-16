@@ -328,7 +328,7 @@ def plot_mass_radius(samples_met1, samples_met50, params, interpolator):
     met50_high = np.ceil(input_met50[0] / 10) * 10
 
     param_met50_roundlow = np.array([one * 50, one * input_met50[2], one * np.log10(input_met50[3]), np.log10(masses_to_calc), one * met50_low]).T
-    radii_met50_roundlow = interpolator((param_met1_roundlow), method="linear")
+    radii_met50_roundlow = interpolator((param_met50_roundlow), method="linear")
 
     param_met50_roundhigh = np.array([one * 50, one * input_met50[2], one * np.log10(input_met50[3]), np.log10(masses_to_calc), one * met50_high]).T
     radii_met50_roundhigh = interpolator((param_met50_roundhigh), method="linear")
