@@ -16,6 +16,7 @@ Feel free to contribute to this tool by raising issues or submitting pull reques
 You can install *smint* from GitHub:
     git clone https://github.com/cpiaulet/smint.git
     cd smint
+    python setup.py install
 
 ### Dependencies
 The dependencies of *stctm* are *NumPy*, *scipy*, *emcee*, *corner*, *astropy*, *pickle*, *configparser* and *argparse*.
@@ -51,7 +52,7 @@ A few additional tips:
 ```
 * The python files can be run as long as the relative path to the models and results directories are correct;
 * Each script illustrates an example of how to initialize, run and postprocess a fit using *smint*;
-* The output files (pickle file recording the fit parameters, MCMC chains, csv file containing median and percentile values, corner plots, mass radius curves) which are produced when running the example scripts as is are already in smint/example/smint_results ("test_new" files for the H/He fraction, "test_fh2o" files for the H2O mass fraction using the Zeng et al. (2016) models and "test_irrow" files for the Aguichine et al. (2021) models).
+* The output files (pickle file recording the fit parameters, MCMC chains, csv file containing median and percentile values, corner plots, mass radius curves) which are produced when running the example scripts as is are already in smint/example/smint_results ("test_new" files for the H/He fraction, "test_fh2o" files for the H2O mass fraction using the Zeng et al. (2016) models, "test_irrow" files for the Aguichine et al. (2021) models, and "test_irrowev" files for the Aguichine et al. (2025) models).
 
 #### Post-processing
 

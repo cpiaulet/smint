@@ -15,6 +15,7 @@ import numpy as np
 from scipy.interpolate import RegularGridInterpolator
 import emcee
 import corner
+import matplotlib.pyplot as plt
 import os
 
 #%% utilities for interpolation
@@ -265,3 +266,79 @@ def plot_corner(samples, params, plot_datapoints=False, smooth=1.,
     return fig
 
 
+def plot_mass_radius(samples, params, interp_r, interp_validity):
+    # %% mass radius curve
+    fh2o = 0.
+    Tirr = 400.
+
+    masses_to_calc = np.logspace(np.log10(0.4), np.log10(20), 1000)
+    one = np.ones_like(masses_to_calc)
+
+    #fcore_in_interior, mass (theta)
+    input = np.median(samples, axis=0)
+
+    # fcore_in_interior, Tirr, fh2o, mass (interp)
+    # parameters are: mass frac of the core in core+mantle; irradiation temp, water mass fraction (0.1 is 10%), mass
+    param_best = np.array([one * input[0], one * Tirr, one * fh2o, np.log10(masses_to_calc)]).T
+    radii_best = interp_r((param_best), method="linear")
+    validity_best = interp_validity((param_best), method="linear")
+    ind_valid_best = np.where(validity_best < 0.5)[0]
+
+    # Creating comparison curves
+    cmf_low = np.floor(input[0] * 10) / 10
+    cmf_high = np.ceil(input[0] * 10) / 10
+
+    param_roundlow = np.array([one * cmf_low, one * Tirr, one * fh2o, np.log10(masses_to_calc)]).T
+    radii_roundlow = interp_r((param_roundlow), method="linear")
+    validity_roundlow = interp_validity((param_roundlow), method="linear")
+    ind_valid_roundlow = np.where(validity_roundlow < 0.5)[0]
+
+    param_roundhigh = np.array([one * cmf_high, one * Tirr, one * fh2o, np.log10(masses_to_calc)]).T
+    radii_roundhigh = interp_r((param_roundhigh), method="linear")
+    validity_roundhigh = interp_validity((param_roundhigh), method="linear")
+    ind_valid_roundhigh = np.where(validity_roundhigh < 0.5)[0]
+
+    # Plotting the curves
+    fig, ax = plt.subplots(1, 1)
+    ax.plot(masses_to_calc[ind_valid_best], radii_best[ind_valid_best], label="Best Fit - CMF = " + str(round(input[0] * 100, 0)) + "%", color="C0", linestyle='dashed')
+    ax.plot(masses_to_calc[ind_valid_roundlow], radii_roundlow[ind_valid_roundlow], label="CMF = " + str(cmf_low * 100) + "%", color="C2")
+    ax.plot(masses_to_calc[ind_valid_roundhigh], radii_roundhigh[ind_valid_roundhigh], label="CMF = " + str(cmf_high * 100) + "%", color="C9")
+
+    # mass and radius values to create error bar
+    ax.errorbar(params["Mp_earth"], params["Rp_earth"], params["err_Rp_earth"], params["err_Mp_earth"], marker="*",
+                color="white", ecolor="black", markeredgecolor="black", capsize=2, markersize=10, ls="")
+
+    # x axis limits
+    x_min = max(1, params["Mp_earth"] - 5 * params["err_Mp_earth"])
+    x_max = params["Mp_earth"] + 5 * params["err_Mp_earth"]
+
+    if x_min > 1.0:
+        x_min = 1.0
+    if x_max < 3.0:
+        x_max = 3.0
+
+    # x ticks
+    ax.set_xscale("log")
+    positions = np.arange(int(np.floor(x_min)), int(np.ceil(x_max)) + 1)
+    ax.set_xticks(positions, labels=[str(int(p)) for p in positions])
+    ax.spines['top'].set_linewidth(2)
+    ax.spines['bottom'].set_linewidth(2)
+    ax.spines['left'].set_linewidth(2)
+    ax.spines['right'].set_linewidth(2)
+
+    # setting other labels
+    ax.set_xlabel(r"Mass [M$_\oplus$]")
+    ax.set_ylabel(r"Radius [R$_\oplus$]")
+    ax.set_xlim(x_min, x_max)
+    ax.legend(loc=2)
+    ax.text(0.95, 0.95, params["fname"],
+    transform = ax.transAxes,
+    verticalalignment = 'top',
+    horizontalalignment = 'right',
+    bbox = dict(boxstyle='round', facecolor='white', alpha=0.5))
+
+
+    fig.savefig(params["outputdir_fullpath"] + "/" + params["fname"] + "_mass_radius_best.png")
+
+
+    return fig

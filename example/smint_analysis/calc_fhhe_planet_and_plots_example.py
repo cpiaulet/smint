@@ -22,6 +22,7 @@ import configparser
 import argparse
 from copy import deepcopy
 import sys
+import shutil
 
 #%% The main code starts here
 
@@ -98,7 +99,6 @@ def main(argv):
     
     params = fit_fhhe.ini_fit(params)
 
-    import shutil
     current_file_path = os.path.abspath(__file__)
     file_name = os.path.basename(current_file_path)
     shutil.copy2(current_file_path, params["outputdir_fullpath"])

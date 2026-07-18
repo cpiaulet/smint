@@ -23,6 +23,8 @@ import configparser
 import argparse
 from copy import deepcopy
 import sys
+from datetime import datetime  # Get current date and time
+import shutil
 
 
 #%% The main code starts here
@@ -85,7 +87,6 @@ def main(argv):
     
     print('\nSetting up the fit...')
 
-    from datetime import datetime  # Get current date and time
     now = datetime.now()  # Format as YYYYMMDD_HHhMMmSSs
     Datestr = now.strftime("%Y%m%d_%Hh%Mm%Ss")
     print(Datestr)  # Output: 20260715_170942s (based on current time)
@@ -99,7 +100,6 @@ def main(argv):
                      + np.array([20., params["err_Mp_earth"]]) \
                          * np.random.randn(params["ndim"]) for i in range(params["nwalkers"])]
 
-    import shutil
     current_file_path = os.path.abspath(__file__)
     file_name = os.path.basename(current_file_path)
     shutil.copy2(current_file_path, params["outputdir_fullpath"])

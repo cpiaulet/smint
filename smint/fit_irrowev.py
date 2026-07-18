@@ -227,7 +227,7 @@ def ini_fit(params, grid_lim=None):
 
     if grid_lim is None:
         grid_lim = dict()
-        grid_lim['age'] = [0.001, 20.]
+        grid_lim['age'] = [0.001, 10.]
         grid_lim['wmf'] = [0.001, 1.]
         grid_lim['mass'] = [0.2, 20.]
         grid_lim['Teq'] = [params["Teq_min"], 1500.]
