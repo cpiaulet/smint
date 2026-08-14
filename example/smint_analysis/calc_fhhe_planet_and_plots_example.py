@@ -145,8 +145,8 @@ def main(argv):
     #%% If loading from an old fit
     if params["postprocess_oldfit"]:
         print('\nLoading chains from previous fit...')
-        samples_met1 = np.load(params["outputdir_fullpath"] + "/" +params["fname"]+'_chains_met1.npy')
-        samples_met50 = np.load(params["outputdir_fullpath"] + "/" +params["fname"]+'_chains_met50.npy')
+        samples_met1 = np.load(params["outputdir"] + params["oldfit_pathname"] + "/" + params["fname"] + '_chains_met1..npy')
+        samples_met50 = np.load(params["outputdir"] + params["oldfit_pathname"] + "/" + params["fname"] + '_chains_met50..npy')
         samples_met1 = samples_met1[:, int(params["frac_burnin"]*samples_met1.shape[1]):, :].reshape((-1, params["ndim"]))
         samples_met50 = samples_met50[:, int(params["frac_burnin"]*samples_met50.shape[1]):, :].reshape((-1, params["ndim"]))
     

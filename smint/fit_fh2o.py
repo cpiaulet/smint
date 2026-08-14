@@ -1,18 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-#emily
 """
 Created on Wed Oct 14 08:37:47 2020
 
-@author: caroline
+@author: caroline & emily
 
 Estimate water mass fraction from the mass and radius of a planet
 assuming a rock+water mix, using the Zeng et al. 2016 grid
 
 Utilities functions
 """
-#something
-#123
+
 # Import modules ---------- 
 import numpy as np
 from scipy.interpolate import RegularGridInterpolator

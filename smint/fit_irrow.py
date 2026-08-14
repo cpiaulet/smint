@@ -17,6 +17,7 @@ import emcee
 import corner
 import matplotlib.pyplot as plt
 import os
+from datetime import datetime  # Get current date and time
 
 #%% utilities for interpolation
 
@@ -184,7 +185,7 @@ def ini_fit(params, grid_lim=None):
     output: initial positions of the walkers and labels for the fitted para
     """
 
-    from datetime import datetime  # Get current date and time
+    
     now = datetime.now()  # Format as YYYYMMDD_HHhMMmSSs
     Datestr = now.strftime("%Y%m%d_%Hh%Mm%Ss")
     print(Datestr)  # Output: 20260715_170942s (based on current time)

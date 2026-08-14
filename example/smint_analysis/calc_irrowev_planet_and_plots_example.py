@@ -114,7 +114,7 @@ def main(argv):
 
     if params["postprocess_oldfit"]:
         print('\nLoading chains from previous fit...')
-        samples = np.load(params["outputdir_fullpath"] + "/" + params["fname"] + '_chains.npy')
+        samples = np.load(params["outputdir"] + params["oldfit_pathname"] + "/" + params["fname"] + '_chains.npy')
         samples = samples[:, int(params["frac_burnin"] * samples.shape[1]):, :].reshape((-1, params["ndim"]))
 
     # %% corner plot for each
