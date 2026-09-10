@@ -22,6 +22,7 @@ import configparser
 import argparse
 from copy import deepcopy
 import sys
+import shutil
 
 #%% The main code starts here
 
@@ -77,6 +78,7 @@ def main(argv):
     parser.add_argument('-met50_color', help='color in histograms for metallicity = 50*solar', default=config.get('plotting','met50_color'))
     parser.add_argument('-corner_indiv', help='bool. if True, plot individual corner plots for each fit', default=config.getboolean('plotting','corner_indiv'))
     parser.add_argument('-corner_both', help='bool. if True, plot both corner plots superimposed', default=config.getboolean('plotting','corner_both'))
+    parser.add_argument('-plot_mass_radius', help='bool. if True, generate mass radius plot', default=config.getboolean('plotting', 'plot_mass_radius'))
 
     args, unknown = parser.parse_known_args()
 
@@ -96,10 +98,15 @@ def main(argv):
     params = fit_fhhe.setup_priors(params)
     
     params = fit_fhhe.ini_fit(params)
+
+    current_file_path = os.path.abspath(__file__)
+    file_name = os.path.basename(current_file_path)
+    shutil.copy2(current_file_path, params["outputdir_fullpath"])
+    shutil.copy2(iniFile, params["outputdir_fullpath"])
     
     if params["save"]:
         # save params dictionary
-        f = open(params["outputdir"]+params["fname"]+"_params"+".pkl","wb")
+        f = open(params["outputdir_fullpath"] + "/" +params["fname"]+"_params"+".pkl","wb")
         pickle.dump(params, f)
         f.close()
     
@@ -138,8 +145,8 @@ def main(argv):
     #%% If loading from an old fit
     if params["postprocess_oldfit"]:
         print('\nLoading chains from previous fit...')
-        samples_met1 = np.load(params["outputdir"]+params["fname"]+'_chains_met1.npy')
-        samples_met50 = np.load(params["outputdir"]+params["fname"]+'_chains_met50.npy')
+        samples_met1 = np.load(params["outputdir_fullpath"] + "/" +params["fname"]+'_chains_met1.npy')
+        samples_met50 = np.load(params["outputdir_fullpath"] + "/" +params["fname"]+'_chains_met50.npy')
         samples_met1 = samples_met1[:, int(params["frac_burnin"]*samples_met1.shape[1]):, :].reshape((-1, params["ndim"]))
         samples_met50 = samples_met50[:, int(params["frac_burnin"]*samples_met50.shape[1]):, :].reshape((-1, params["ndim"]))
     
@@ -149,15 +156,21 @@ def main(argv):
         print('\nPlotting individual corner plots...')
         fig_met1 = fit_fhhe.plot_corner(samples_met1, params, which="met1")
         fig_met50 = fit_fhhe.plot_corner(samples_met50, params, which="met50")
-        fig_met1.savefig(params['outputdir']+params["fname"]+'_corner_met1.png')
-        fig_met50.savefig(params['outputdir']+params["fname"]+'_corner_met50.png')
+        fig_met1.savefig(params["outputdir_fullpath"] + "/" +params["fname"]+'_corner_met1.png')
+        fig_met50.savefig(params["outputdir_fullpath"] + "/" +params["fname"]+'_corner_met50.png')
     
     if params["corner_both"]:
         print('\nPlotting corner plot with both metallicities...')
-        rg = [[5.,20.], [0., 15.], [1., 10.], [27., 37.]] # None
-        fig_both = fit_fhhe.plot_corner([samples_met1,samples_met50], params, which="both", rg=rg)
-        fig_both.savefig(params['outputdir']+params["fname"]+'_corner_both.png')
-    
+        fig_both = fit_fhhe.plot_corner([samples_met1,samples_met50], params, which="both", rg=None)
+        fig_both.savefig(params["outputdir_fullpath"] + "/" +params["fname"]+'_corner_both.png')
+
+    #%% mass radius curve
+    if params["plot_mass_radius"]:
+        print('\nPlotting mass radius curves...')
+        fig_both = fit_fhhe.plot_mass_radius(samples_met1, samples_met50, params, interpolator)
+        fig_both.savefig(params["outputdir_fullpath"] + "/" + params["fname"] + "_mass_radius_best.png")
+
+
 #%%
 
 if __name__ == "__main__":

@@ -17,6 +17,8 @@ import emcee
 import corner
 from astropy.io import ascii as aioascii
 from astropy import table
+import matplotlib.pyplot as plt
+import os
 
 #%% utilities for interpolation
 
@@ -155,6 +157,12 @@ def ini_fit(params, grid_lim=None):
     if None, uses the bounds from the Lopez & Fortney (2014) grid
     output: initial positions of the walkers and labels for the fitted para
     """
+    from datetime import datetime  # Get current date and time
+    now = datetime.now()  # Format as YYYYMMDD_HHhMMmSSs
+    Datestr = now.strftime("%Y%m%d_%Hh%Mm%Ss")
+    print(Datestr)  # Output: 20260715_170942s (based on current time)
+    params["outputdir_fullpath"] = params["outputdir"] + "/" + params["fname"] + "_" + Datestr
+    os.makedirs(params["outputdir_fullpath"], exist_ok=True)
 
     if params["log_fenv_prior"]:
         fenv_ini = 0.
@@ -205,7 +213,7 @@ def run_fit(params, interpolator, met=1.):
     
     if params["save"]:
         print("\nSaving the results...")
-        np.save(params["outputdir"]+params["fname"]+'_chains_met'+str(int(met))+'.npy', sampler.chain)
+        np.save(params["outputdir_fullpath"] + "/" +params["fname"]+'_chains_met'+str(int(met))+'.npy', sampler.chain)
     
     return sampler
 
@@ -239,7 +247,7 @@ def calc_constraints(samples, params, more_percentiles=[15.9, 50., 84.1], suffix
     print(t)
 
     if params["save"]:
-        aioascii.write(t, params["outputdir"]+params["fname"]+suffix+'_constraints.csv', overwrite=True)
+        aioascii.write(t, params["outputdir_fullpath"] + "/" +params["fname"]+suffix+'_constraints.csv', overwrite=True)
     return t
  
 def plot_corner(samples, params, which="met1", 
@@ -286,6 +294,82 @@ def plot_corner(samples, params, which="met1",
                             color=params["met1_color"], hist_kwargs=hist_kwargs,
                             range=rg, levels=levels, **kwargs)
         
+    return fig
+
+def plot_mass_radius(samples_met1, samples_met50, params, interpolator):
+
+    #%% mass radius curve
+    masses_to_calc = np.logspace(np.log10(0.4), np.log10(20.0), 1000)
+    one = np.ones_like(masses_to_calc)
+
+    #params #samples #find best fit median parameters of _x solar #order of index: fenv, mass, age, finc
+    input_met1 = np.median(samples_met1, axis=0)
+    input_met50 = np.median(samples_met50, axis=0)
+
+    # parameters are: met in * solar, age in Gyr, log10 finc in units of the solar constant, log_10 mass [Mearth], envelope mass fraction in %
+    # metallicity_solar, age_Gyr, log10_F_inc_oplus, log10_Mass_oplus, f_env_pc
+    param_best_met1 = np.array([one * 1, one * input_met1[2], one * np.log10(input_met1[3]), np.log10(masses_to_calc), one * input_met1[0]]).T
+    radii_best_met1 = interpolator(param_best_met1, method="linear")
+
+    met1_low = np.floor(input_met1[0] / 10) * 10
+    met1_high = np.ceil(input_met1[0] / 10) * 10
+
+    param_met1_roundlow = np.array([one * 1, one * input_met1[2], one * np.log10(input_met1[3]), np.log10(masses_to_calc), one * met1_low]).T
+    radii_met1_roundlow = interpolator((param_met1_roundlow), method="linear")
+
+    param_met1_roundhigh = np.array([one * 1, one * input_met1[2], one * np.log10(input_met1[3]), np.log10(masses_to_calc), one * met1_high]).T
+    radii_met1_roundhigh = interpolator((param_met1_roundhigh), method="linear")
+
+
+
+    param_best_met50 = np.array([one * 50, one * input_met50[2], one * np.log10(input_met50[3]), np.log10(masses_to_calc), one * input_met50[0]]).T
+    radii_best_met50 = interpolator(param_best_met50, method="linear")
+    met50_low = np.floor(input_met50[0] / 10) * 10
+    met50_high = np.ceil(input_met50[0] / 10) * 10
+
+    param_met50_roundlow = np.array([one * 50, one * input_met50[2], one * np.log10(input_met50[3]), np.log10(masses_to_calc), one * met50_low]).T
+    radii_met50_roundlow = interpolator((param_met50_roundlow), method="linear")
+
+    param_met50_roundhigh = np.array([one * 50, one * input_met50[2], one * np.log10(input_met50[3]), np.log10(masses_to_calc), one * met50_high]).T
+    radii_met50_roundhigh = interpolator((param_met50_roundhigh), method="linear")
+
+    fig, ax = plt.subplots(1, 1)
+    ax.plot(masses_to_calc, radii_best_met1, label="Best Fit (1x Solar) - fenv = " + str(round(input_met1[0], 2)) + "%", color="C0")
+    ax.plot(masses_to_calc, radii_met1_roundlow, label="fenv = " + str(met1_low) + "%", color="C2")
+    ax.plot(masses_to_calc, radii_met1_roundhigh, label="fenv = " + str(met1_high) + "%", color="C9")
+
+    ax.plot(masses_to_calc, radii_best_met50, label="Best Fit (50x Solar) - fenv = " + str(round(input_met50[0], 2)) + "%", color="C3")
+    ax.plot(masses_to_calc, radii_met50_roundlow, label="fenv = " + str(met50_low) + "%", color="C1")
+    ax.plot(masses_to_calc, radii_met50_roundhigh, label="fenv = " + str(met50_high) + "%", color="C6")
+
+    ax.errorbar(params["Mp_earth"], params["Rp_earth"], params["err_Rp_earth"], params["err_Mp_earth"], marker="*", color="white", ecolor="black", markeredgecolor="black", capsize=2, markersize=10, ls="")
+
+    #x axis limits
+    x_min = max(1, params["Mp_earth"] - 5 * params["err_Mp_earth"])
+    x_max = params["Mp_earth"] + 5 * params["err_Mp_earth"]
+
+    #x ticks
+    ax.set_xscale("log")
+    positions = np.arange(int(np.floor(x_min)), int(np.ceil(x_max)) + 1)
+    ax.set_xticks(positions, labels = [str(int(p)) for p in positions])
+    ax.spines['top'].set_linewidth(2)
+    ax.spines['bottom'].set_linewidth(2)
+    ax.spines['left'].set_linewidth(2)
+    ax.spines['right'].set_linewidth(2)
+
+    #setting other labels
+    ax.set_xlabel(r"Mass [M$_\oplus$]")
+    ax.set_ylabel(r"Radius [R$_\oplus$]")
+    ax.set_xlim(x_min, x_max)
+    ax.legend(loc=2)
+    ax.text(0.95, 0.95, params["fname"],
+            transform=ax.transAxes,
+            verticalalignment='top',
+            horizontalalignment='right',
+            bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
+
+    fig.savefig(params["outputdir_fullpath"] + "/" + params["fname"] + "_mass_radius_best.png")
+
     return fig
 
 
