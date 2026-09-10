@@ -20,6 +20,7 @@ import configparser
 import argparse
 from copy import deepcopy
 import sys
+import shutil
 
 #%% The main code starts here
 
@@ -89,10 +90,16 @@ def main(argv):
     params = fit_irrow.setup_priors(params)
     
     params = fit_irrow.ini_fit(params)
-    
+
+
+    current_file_path = os.path.abspath(__file__)
+    file_name = os.path.basename(current_file_path)
+    shutil.copy2(current_file_path, params["outputdir_fullpath"])
+    shutil.copy2(iniFile, params["outputdir_fullpath"])
+
     if params["save"]:
         # save params dictionary
-        f = open(params["outputdir"]+params["fname"]+"_params"+".pkl","wb")
+        f = open(params["outputdir_fullpath"] + "/" +params["fname"]+"_params"+".pkl","wb")
         pickle.dump(params, f)
         f.close()
     
@@ -116,7 +123,7 @@ def main(argv):
     
     if params["postprocess_oldfit"]:
         print('\nLoading chains from previous fit...')
-        samples = np.load(params["outputdir"]+params["fname"]+'_chains.npy')
+        samples = np.load(params["outputdir_fullpath"] + "/" +params["fname"]+'_chains.npy')
         samples = samples[:, int(params["frac_burnin"]*samples.shape[1]):, :].reshape((-1, params["ndim"]))
 
         
@@ -124,7 +131,7 @@ def main(argv):
     if params["plot_corner"]:
         print('\nGenerating corner plot...')
         fig = fit_irrow.plot_corner(samples, params)
-        fig.savefig(params['outputdir']+params["fname"]+'_corner.png')
+        fig.savefig(params["outputdir_fullpath"] + "/" +params["fname"]+'_corner.png')
 
 #%%
 

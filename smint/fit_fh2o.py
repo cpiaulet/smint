@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+#emily
 """
 Created on Wed Oct 14 08:37:47 2020
 
@@ -10,7 +11,8 @@ assuming a rock+water mix, using the Zeng et al. 2016 grid
 
 Utilities functions
 """
-
+#something
+#123
 # Import modules ---------- 
 import numpy as np
 from scipy.interpolate import RegularGridInterpolator
@@ -18,6 +20,7 @@ import emcee
 import corner
 from astropy.io import ascii as aioascii
 from astropy import table
+import matplotlib.pyplot as plt
 
 
 #%% utilities for interpolation
@@ -115,7 +118,7 @@ def run_fit(params, interpolator):
     
     if params["save"]:
         print("\nSaving the results...")
-        np.save(params["outputdir"]+params["fname"]+'_chains.npy', sampler.chain)
+        np.save(params["outputdir_fullpath"] + "/" +params["fname"]+'_chains.npy', sampler.chain)
     
     return sampler
 
@@ -149,7 +152,7 @@ def calc_constraints(samples, params, more_percentiles=[15.9, 50., 84.1]):
     print(t)
 
     if params["save"]:
-        aioascii.write(t, params["outputdir"]+params["fname"]+'_constraints.csv', overwrite=True)
+        aioascii.write(t, params["outputdir_fullpath"] + "/" +params["fname"]+'_constraints.csv', overwrite=True)
     return t
 
 def plot_corner(samples, params, plot_datapoints=False, smooth=1.,
@@ -176,4 +179,62 @@ def plot_corner(samples, params, plot_datapoints=False, smooth=1.,
                         levels=levels, **kwargs)
     return fig
 
+def plot_mass_radius(samples, params, interpolator):
 
+    #%% mass radius curve
+    masses_to_calc = np.logspace(np.log10(0.4), np.log10(20), 1000)
+    one = np.ones_like(masses_to_calc)
+
+    #params #samples #order of inputs fh2o, mass
+    input = np.median(samples, axis=0)
+
+    # parameters are: fh2o, mass
+    param_best = np.array([one * input[0], masses_to_calc]).T
+    radii_best = interpolator((param_best), method="linear")
+
+    fh2o_low = np.floor(input[0] / 10) * 10
+    fh2o_high = np.ceil(input[0] / 10) * 10
+
+    param_roundlow = np.array([one * fh2o_low, masses_to_calc]).T
+    radii_roundlow = interpolator((param_roundlow), method="linear")
+
+    param_roundhigh = np.array([one * fh2o_high, masses_to_calc]).T
+    radii_roundhigh = interpolator((param_roundhigh), method="linear")
+
+    fig, ax = plt.subplots(1, 1)
+    ax.plot(masses_to_calc, radii_best, label="Best Fit - fH2O = " + str(round(input[0], 2)) + "%", color="C0", linestyle='dashed')
+    ax.plot(masses_to_calc, radii_roundlow, label="fH2O = " + str(fh2o_low) + "%", color="C2")
+    ax.plot(masses_to_calc, radii_roundhigh, label="fH2O = " + str(fh2o_high) + "%", color="C9")
+
+    # mass and radius values from Cadieux+ 2025
+    ax.errorbar(params["Mp_earth"], params["Rp_earth"], params["err_Rp_earth"], params["err_Mp_earth"], marker="*", color="white", ecolor="black", markeredgecolor="black", capsize=2, markersize=10, ls="")
+
+    #x axis limits
+    #x_min = max(1, params["Mp_earth"] - 5 * params["err_Mp_earth"])
+    #x_max = params["Mp_earth"] + 5 * params["err_Mp_earth"]
+    x_min = 1.0
+    x_max = 8.0
+
+    #x ticks
+    ax.set_xscale("log")
+    positions = np.arange(int(np.floor(x_min)), int(np.ceil(x_max)) + 1)
+    ax.set_xticks(positions, labels = [str(int(p)) for p in positions])
+    ax.spines['top'].set_linewidth(2)
+    ax.spines['bottom'].set_linewidth(2)
+    ax.spines['left'].set_linewidth(2)
+    ax.spines['right'].set_linewidth(2)
+
+    #setting other labels
+    ax.set_xlabel(r"Mass [M$_\oplus$]")
+    ax.set_ylabel(r"Radius [R$_\oplus$]")
+    ax.set_xlim(x_min, x_max)
+    ax.legend(loc=2)
+    ax.text(0.95, 0.95, params["fname"],
+            transform=ax.transAxes,
+            verticalalignment='top',
+            horizontalalignment='right',
+            bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
+
+    fig.savefig(params["outputdir_fullpath"] + "/" + params["fname"] + "_mass_radius_best.png")
+
+    return fig

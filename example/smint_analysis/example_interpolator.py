@@ -14,14 +14,14 @@ Example script
 
 # Import modules ---------- 
 import numpy as np
-from smint import fit_fh2o, fit_fhhe
+from smint import fit_fh2o, fit_fhhe, fit_irrowev
 import astropy.io as aio 
 
 #%% Setup path
 
 path_folder_models = "../smint_models/"
 
-#%% Using HHe mass fraction
+#%% Using HHe mass fraction (Lopez&Fortney 2014)
 
 path_file = path_folder_models + 'master_table_LF14_20201014.csv'
 t = aio.ascii.read(path_file)
@@ -32,7 +32,7 @@ interp_hhe = fit_fhhe.make_interpolator_LF14(t, R_array, log_fenv_prior=False)
 r_interp_hhe = fit_fhhe.find_radius_fenv(interp=interp_hhe, met=1., age=2., log10_finc=2.5, log10_mass=0.2, fenv=12.)
 print(r_interp_hhe, 'Earth radii')
 
-#%% Using H2O mass fraction
+#%% Using H2O mass fraction (Zeng et al. 2016)
 
 t_rock_h2o = aio.ascii.read(path_folder_models+"t_rock_h2o_Zeng2016.csv")
 interp_h2o = fit_fh2o.make_interpolator_fh2o(t_rock_h2o)
@@ -41,3 +41,10 @@ interp_h2o = fit_fh2o.make_interpolator_fh2o(t_rock_h2o)
 r_interp_h2o = fit_fh2o.find_radius_fh2o(interp=interp_h2o, mass=8., fh2o=11.)
 print(r_interp_h2o, 'Earth radii')
 
+#%% Using H2O mass fraction (Aguichine et al. 2025)
+
+interp_irrowev = fit_irrowev.make_interpolator_A25(path_folder_models, which_table="M", which_quantity="R_20mbar")
+
+# age in Gyr, log10 mass in Earth masses, equilibrium T, water mass fraction (0.1 is 10%)
+r_interp_irrowev = fit_irrowev.find_radius_from_comp(interp_r=interp_irrowev, age=1., log10_mass=1.30103, Teq=400., wmf=1.)
+print(r_interp_irrowev, 'Earth radii')
